@@ -1,0 +1,428 @@
+## **Project Briefing**
+
+- **Project Name**: Next-Gen Messaging App
+- **Description**: Develop a production-ready messaging application with feature parity to Slack, followed by the integration of AI-powered features. The application must exhibit excellent usability through strict adherence to UI/UX planning and instructions.
+- **Development Environment**: Cursor IDE with Claude Sonnet 3.5
+- **Deployment Platform**: Docker and AWS Services
+
+---
+
+## **Technology Stack and Tools**
+
+### **Backend**
+
+- **Language**: JavaScript (ES6+)
+- **Runtime**: Node.js v22 LTS
+- **Framework**: Express.js
+- **Module System**: ECMAScript Modules (`import`/`export`)
+- **Authentication**: JSON Web Tokens (JWT)
+- **Real-Time Communication**: WebSockets using Socket.io
+- **Database**: PostgreSQL
+- **File Storage**: AWS S3
+
+### **Frontend**
+
+- **Language**: JavaScript (ES6+)
+- **Framework**: React.js
+- **Module System**: ECMAScript Modules
+
+### **Testing**
+
+- **Unit Testing**: Jest (for both frontend and backend)
+- **Integration Testing**: SuperTest (for API endpoints)
+- **End-to-End Testing**: Cypress
+  - Place Cypress tests in a separate `e2e` folder at the root level.
+  - Cypress tests should tee server logs to `cypress-server.log`.
+
+### **Code Quality and Standards**
+
+- **Style Guide**: Use ESLint with the Airbnb JavaScript Style Guide
+- **Code Formatting**: Use Prettier for consistent code formatting
+- **Type Checking**: Use JavaScript (TypeScript is not used)
+- **Documentation**:
+  - Inline Code Documentation: Use JSDoc
+  - API Documentation: Use Swagger/OpenAPI for documenting RESTful APIs
+
+### **Version Control**
+
+- **System**: Git
+- **Workflow**:
+  - Use feature branching for development
+  - Protect main branches
+  - Merge via pull requests with required code reviews
+
+### **Deployment**
+
+- **Containerization**: Docker
+- **Orchestration**: Docker Compose
+- **Environment Variables**: Manage securely using `dotenv`
+
+### **Continuous Integration (CI)**
+
+- Use GitHub Actions for CI pipelines
+- Automated testing and linting on each push/merge to main branches
+- Configure CI to run Cypress tests located in the `e2e` folder
+
+---
+
+## **Project Structure and Navigation**
+
+```
+/ (Root)
+├── client/              # React.js frontend code
+├── server/              # Node.js backend code
+├── e2e/                 # Cypress End-to-End tests
+├── documentation/       # Project documentation in .md files
+├── .gitignore
+├── README.md            # Project overview and setup instructions
+├── CHANGELOG.md         # Documentation of major changes and updates
+└── ...
+```
+
+- **File Naming Conventions**:
+  - **Files and Directories**: Use **kebab-case** (e.g., `user-profile.js`)
+  - **Variables and Functions**: Use **camelCase**
+  - **Classes and React Components**: Use **PascalCase**
+- **Consistency**:
+  - Ensure consistent directory structure across development environments
+  - Include comprehensive README files with setup and deployment instructions for each directory
+  - Maintain a CHANGELOG for documenting major changes and updates
+  - Use `.gitignore` files to exclude unnecessary files from version control
+
+---
+
+## **Development Workflow**
+
+### **1. Test-Driven Development (TDD)**
+
+- **Approach**:
+  - Write tests **before** implementing features
+  - For each feature:
+    1. **Write Unit Tests**: Use Jest
+    2. **Write Integration Tests**: Use SuperTest
+    3. **Write End-to-End Tests**: Use Cypress
+    4. **Implement the Feature**: Write code to pass the tests
+    5. **Run and Analyze Tests**: Ensure all tests pass
+    6. **Document the Feature**: Update documentation and inline comments
+
+### **2. Git Workflow**
+
+- **Branching**:
+  - Use feature branches for development (e.g., `feature/user-authentication`)
+  - Protect `main` branches; no direct commits
+- **Committing**:
+  - Commit changes frequently with meaningful messages
+  - All code must pass ESLint and Prettier checks before committing
+- **Pull Requests**:
+  - Create pull requests to merge into `main`
+  - Require code reviews and approval before merging
+
+### **3. Continuous Integration and Deployment**
+
+- **Automated Testing**:
+  - Configure CI to run tests and linters on each push or pull request
+- **Deployment Scripts**:
+  - Prepare Dockerfiles for development and production
+  - Ensure the application can be deployed smoothly using Docker Compose
+
+### **4. Environment Setup**
+
+- **Local Development**:
+  - Use Docker and Docker Compose
+  - Manage environment variables securely with `dotenv`
+- **Commands Before Committing**:
+  - Run `yarn test`, `yarn test:e2e`, `yarn act`
+  - Use non-blocking commands; avoid commands that keep the terminal open
+- **After Testing**:
+  - Run `git add .`, `git commit`, `git push`, and create a pull request
+
+---
+
+## **Programming Practices and Constraints**
+
+### **Language and Module Usage**
+
+- **Only Use JavaScript (ES6+)**
+- **Do Not Use TypeScript**
+- **Module System**: Use ECMAScript modules (`import`/`export`)
+- **Avoid**: CommonJS (`require`, `module.exports`)
+
+### **Dependencies**
+
+- Only use dependencies compatible with ECMAScript modules
+- Avoid adding tools or dependencies that only work with CommonJS
+
+### **Code Quality**
+
+- **Style Guide**: Adhere strictly to Airbnb JavaScript Style Guide
+- **Linting**: Use ESLint to enforce code standards
+- **Formatting**: Use Prettier for consistent formatting
+- **Documentation**:
+  - Inline code with JSDoc
+  - API documentation with Swagger/OpenAPI
+
+---
+
+## **Debugging and Logging Guidelines**
+
+### **Debugging Techniques**
+
+1. **Observe the Problem**:
+   - Read error messages carefully
+   - Note any unusual behavior
+2. **Examine Relevant Code**:
+   - Identify the code sections related to the issue
+3. **Hypothesize Possible Causes**:
+   - Consider multiple possibilities
+   - Think about recent changes or edge cases
+4. **Non-Destructive Diagnostics**:
+   - Add logging statements strategically
+   - Use breakpoints and debugging tools
+5. **Test Hypotheses**:
+   - Make small test changes to validate assumptions
+   - Prioritize minimal changes before larger ones
+6. **Confirm and Resolve**:
+   - Ensure the issue is fixed without side effects
+   - Remove unnecessary debugging code after resolution
+
+### **Logging Standards**
+
+- **Log Levels**:
+  - `info`: General operational messages
+  - `debug`: Detailed debugging information
+  - `warn`: Indications of potential issues
+  - `error`: Error events requiring attention
+- **Consistency**:
+  - Use consistent log formatting across frontend and backend
+  - Implement log rotation if necessary
+- **Avoid Excessive Logging**:
+  - Do not clutter logs with unnecessary information
+  - Remove or comment out debug logs before committing
+
+---
+
+## **User Flow and Feature Requirements**
+
+### **User Onboarding**
+
+- **Instant Access for Visitors**:
+  - Visitors can send a chat message immediately
+  - System creates a guest user with a random name and email (`[username]@guest.chatgenius.local`)
+  - Initial message is POSTed to the server
+  - User is redirected to the demo chat page
+
+- **Account Creation**:
+  - Users can sign up with a username, email, and password
+
+### **Workspace Management**
+
+- **Workspaces**:
+  - Users can browse, join, or create Workspaces
+  - Each user can belong to multiple Workspaces
+- **Roles**:
+  - Roles include Admin, Member, and Guest
+  - Permissions are controlled based on roles
+
+### **Channel Management**
+
+- **Channels**:
+  - Users can create public or private Channels
+  - Channel creators are assigned as admins
+  - Public Channels are open for any member to join
+  - Private Channels require invitations
+
+### **Messaging Features**
+
+- **Core Messaging**:
+  - Send text messages, emojis, and file attachments
+  - Messages can be edited within a time limit
+  - Support message threading
+- **Real-Time Communication**:
+  - Use Socket.io for real-time updates
+  - Implement typing indicators and online status
+- **Message Enhancements**:
+  - Reaction system with emojis
+  - Message formatting using Markdown (use parser like Marked)
+  - Edit history tracking
+
+### **Notifications and Status**
+
+- **Notifications**:
+  - Users receive notifications for mentions
+  - Customize notification settings
+- **Status Indicators**:
+  - Online/offline status tracking
+  - Read/unread message status
+
+### **Search and History**
+
+- **Search Functionality**:
+  - Implement full-text search using PostgreSQL capabilities
+  - Search across messages, Channels, and users
+- **History Navigation**:
+  - Access Channel history
+  - View personal message history
+  - Pin important messages
+
+---
+
+## **Security Considerations**
+
+- **Data Transmission**:
+  - Use HTTPS with SSL/TLS
+- **Authentication**:
+  - Secure JWT handling with refresh tokens and expiration policies
+- **Data Protection**:
+  - Hash passwords securely using bcrypt
+  - Implement input validation and sanitization
+  - Comply with data protection regulations (e.g., GDPR)
+- **Role-Based Access Control (RBAC)**:
+  - Control access based on user roles and permissions
+
+---
+
+## **AI Integration**
+
+- **Future Development**:
+  - AI features (e.g., AI avatars) are planned for later phases
+  - Current focus is on core functionality and feature parity with Slack
+
+---
+
+## **Testing and Quality Assurance**
+
+- **Code Coverage**:
+  - Aim for 80% coverage in unit tests
+- **Test Practices**:
+  - Write tests before implementing features
+  - Prioritize testing critical functionalities
+- **End-to-End Testing**:
+  - Use Cypress tests in the `e2e` folder
+  - Simulate user flows and interactions
+
+---
+
+## **Precision in User Requirements**
+
+- **Adherence**:
+  - Strictly follow specified user flows and messaging rules
+- **Strategic Planning**:
+  - Outline processes and API endpoints with pseudocode before coding
+- **Example**:
+  - Provide pseudocode for real-time message delivery, detailing steps from message creation to notification
+
+---
+
+## **LLM Guidance and Responsibilities**
+
+### **Attention and Focus**
+
+- **Be Aware**:
+  - Always know which files and architecture components you are working on
+- **Stay On Task**:
+  - Focus on the current feature or function
+  - Avoid getting sidetracked or stuck in loops
+
+### **Reasoning Techniques**
+
+- **Problem-Solving Steps**:
+  - Break down tasks into manageable chunks
+  - Use logical reasoning to address issues
+  - Consider multiple solutions and choose the most effective one
+
+### **Best Practices Enforcement**
+
+- **Code Standards**:
+  - Ensure code adheres to specified guidelines
+- **Development Process**:
+  - Follow TDD and development workflows strictly
+- **Dependencies**:
+  - Only use approved tools compatible with the project requirements
+
+### **Debugging Assistance**
+
+- **Provide Effective Advice**:
+  - Suggest adding logging statements when appropriate
+  - Encourage minimal and non-destructive changes first
+- **Enforce Cleanliness**:
+  - Keep code clean and readable
+  - Log levels should be used appropriately (`info`, `debug`, `warn`, `error`)
+  - Maintain consistent log formatting throughout the project
+
+---
+
+## **Prohibited Actions**
+
+- **Do Not Use**:
+  - CommonJS modules (`require`, `module.exports`)
+  - Tools or dependencies incompatible with ECMAScript modules
+- **Do Not Change**:
+  - Specified versions of technologies or tools
+  - Established code conventions and project guidelines
+- **Avoid**:
+  - Circular reasoning or repetitive attempts
+  - Deviating from the development plan and workflows
+
+---
+
+## **Guidance for Development**
+
+### **Clarity and Maintainability**
+
+- **Write Clear Code**:
+  - Self-explanatory where possible
+  - Comment complex logic
+- **Modularity**:
+  - Keep functions and components focused and reusable
+  - Avoid overly complex functions
+
+### **Consistency**
+
+- **Coding Styles**:
+  - Maintain uniform styles across files and components
+- **Structure and Organization**:
+  - Follow the established project structure
+  - Keep related files and modules organized
+
+### **Efficiency in Reasoning**
+
+- **Approach Problems Methodically**:
+  - Use a step-by-step approach
+- **Document Reasoning**:
+  - Keep track of decisions and reasoning in documentation
+- **Mindful of Context Window**:
+  - Be aware of the 200,000-token context limitation
+  - Use documentation files to store detailed information
+
+---
+
+## **Steps When Facing Challenges**
+
+1. **Identify the Issue**:
+   - Clearly define what is not working
+2. **Gather Information**:
+   - Collect error messages, logs, and relevant data
+3. **Consult Documentation**:
+   - Review project documentation and relevant resources
+4. **Hypothesize Potential Causes**:
+   - Consider all possible reasons for the issue
+5. **Plan a Solution**:
+   - Decide on the best approach to fix the problem
+6. **Implement Non-Destructive Tests**:
+   - Make minimal changes to test hypotheses
+7. **Verify and Test**:
+   - Ensure the solution works without introducing new issues
+8. **Document the Resolution**:
+   - Update code comments and documentation with insights
+
+---
+
+## **Additional Notes**
+
+- **List Directories and Files**:
+  - Always list the directory structure and files you are working with before creating new ones
+- **Terminal Commands**:
+  - Use commands that do not remain open in the terminal
+  - Exit interactive commands properly (use `\q` or similar)
+- **Logging in Cypress Tests**:
+  - Configure Cypress tests to tee server logs to `cypress-server.log`
