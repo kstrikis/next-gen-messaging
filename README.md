@@ -1,211 +1,138 @@
-```
-Next-Gen Messaging App
+# ChatGenius
 
-Welcome to the Next-Gen Messaging App project. This application aims to provide a production-ready messaging platform with feature parity to Slack, incorporating modern UI/UX principles and preparing for future AI integrations.
+A modern messaging platform with AI-powered features, built using Domain-Driven Design principles. ChatGenius combines Slack-like functionality with advanced AI capabilities for enhanced workplace communication.
 
----
+## Core Features
 
-Table of Contents
+### Real-time Communication
+- Public and private channels
+- Direct messaging with typing indicators
+- Message threading and reactions
+- File sharing via AWS S3
+- Rich text formatting with Markdown
+- Full-text search across messages
 
-- Introduction
-- Features
-- Getting Started
-- Project Structure
-- Documentation
-- Contributing
-- License
-- Contact
+### AI Integration
+- Customizable AI avatars
+- Voice and gesture synthesis
+- Smart autoresponders
+- AI-assisted message composition
+- Content moderation
 
----
+### User Experience
+- Instant guest access
+- Role-based workspace management
+- Customizable notifications
+- User presence indicators
+- Mobile-responsive design
 
-Introduction
+## Architecture
 
-The Next-Gen Messaging App is designed to offer seamless communication with a focus on usability and performance. Built with a modern technology stack, it leverages Node.js, React.js, PostgreSQL, and other cutting-edge tools to deliver real-time messaging capabilities similar to Slack.
+### Frontend
+- React.js with Next.js
+- Tailwind CSS & shadcn/ui
+- Socket.IO Client
+- React Query & Redux Toolkit
+- Storybook for component development
 
----
+### Backend
+- Node.js v22 LTS & Express.js
+- Socket.IO for real-time features
+- PostgreSQL with Prisma ORM
+- Auth0 for authentication
+- AWS S3 for file storage
 
-Features
+### Testing & Quality
+- Jest & React Testing Library
+- Cypress for E2E testing
+- SuperTest for API testing
+- ESLint & Prettier
+- Continuous Integration with GitHub Actions
 
-User Onboarding
+## Getting Started
 
-- Instant access for visitors with guest accounts.
-- User registration with email and password.
-
-Workspace Management
-
-- Create, join, and manage multiple workspaces.
-- Role-based access control: Admins, Members, Guests.
-
-Channel Management
-
-- Public and private channels.
-- Channel creation and administration.
-- Invitations and membership management.
-
-Messaging
-
-- Real-time messaging using Socket.io.
-- Rich text formatting with Markdown support.
-- Emojis, reactions, and message threading.
-- File attachments and sharing via AWS S3.
-
-Notifications and Status
-
-- Mention notifications.
-- Typing indicators and online status.
-- Customizable notification settings.
-
-Search and History
-
-- Full-text search across messages and channels.
-- Access to message history and pinned messages.
-
-Security
-
-- Secure authentication with JWT.
-- Data protection compliance (e.g., GDPR).
-
-Coming Soon
-
-- AI-powered features and integrations.
-
----
-
-Getting Started
-
-Prerequisites
-
+### Prerequisites
 - Node.js v22 LTS
-- Docker and Docker Compose
+- PostgreSQL 15+
 - Git
 - Yarn package manager
+- AWS Account (for S3)
+- Auth0 Account
 
-Installation
+### Installation
 
 1. Clone the repository:
+   ```bash
+   git clone https://github.com/kstrikis/next-gen-messaging.git
+   cd next-gen-messaging
+   ```
 
-   git clone https://github.com/yourusername/next-gen-messaging-app.git
-
-2. Navigate to the project directory:
-
-   cd next-gen-messaging-app
-
-3. Install dependencies:
-
-   For the backend:
-
-   cd server
+2. Install dependencies:
+   ```bash
+   # Install root dependencies
    yarn install
+   ```
 
-   For the frontend:
+3. Set up environment variables:
+   ```bash
+   # Copy example environment files
+   cp .env.example .env
 
-   cd ../client
-   yarn install
+   # Edit .env with your:
+   # - Database credentials
+   # - AWS S3 configuration
+   # - Auth0 credentials
+   # - API keys and secrets
+   ```
 
-4. Set up environment variables:
+4. Initialize the database:
+   ```bash
+   # Run database migrations
+   yarn prisma migrate dev
+   ```
 
-   Copy .env.example to .env in both the server and client directories and update as necessary.
+5. Start development servers:
+   ```bash
+   # Start both frontend and backend
+   yarn dev
 
-5. Start the application:
+   # Or start separately:
+   yarn dev:client    # Frontend: http://localhost:3000
+   yarn dev:server    # Backend:  http://localhost:8000
+   ```
 
-   Using Docker Compose:
+## Project Structure
 
-   docker-compose up
+```
+project-root/
+├── client/                # React.js frontend
+│   ├── components/        # UI components
+│   ├── pages/            # Next.js pages
+│   ├── hooks/            # Custom hooks
+│   ├── styles/           # Tailwind styles
+│   └── redux/            # State management
+├── server/               # Node.js backend
+│   ├── controllers/      # Request handlers
+│   ├── models/          # Prisma models
+│   ├── routes/          # API routes
+│   └── prisma/          # Database schema
+├── cypress/              # E2E tests
+├── tests/                # Unit & integration tests
+└── docs/                 # Documentation
+```
 
-   Without Docker:
+## Documentation
 
-   For the backend:
+- [User Flow](docs/user-flow.md) - Detailed user interaction flows
+- [API Schema](docs/api-socket-message-schema.md) - API and WebSocket documentation
+- [Database Schema](docs/db-schema.md) - Data model and relationships
+- [Project Structure](docs/directory-structure.md) - Codebase organization
 
-   cd server
-   yarn start
+## Contributing
 
-   For the frontend:
-
-   cd client
-   yarn start
-
-6. Access the application:
-
-   Open your browser and navigate to http://localhost:3000
-
----
-
-Project Structure
-
-/ (Root Directory)
-├── client/                   React.js frontend code
-├── server/                   Node.js backend code
-├── e2e/                      Cypress End-to-End tests
-├── docs/                     Project documentation
-│   ├── ARCHITECTURE.md
-│   ├── API_DOCUMENTATION.md
-│   ├── SETUP_GUIDE.md
-│   ├── DEPLOYMENT_GUIDE.md
-│   ├── TESTING_GUIDE.md
-│   ├── STYLE_GUIDE.md
-│   ├── SECURITY_POLICY.md
-│   ├── ROADMAP.md
-│   ├── ENVIRONMENT_VARIABLES.md
-│   ├── DATABASE_SCHEMA.md
-│   ├── DIAGRAMS/
-│   ├── GLOSSARY.md
-│   ├── FAQ.md
-│   ├── SCRIPTS_GUIDE.md
-│   ├── DATA_PRIVACY.md
-│   └── PERFORMANCE_GUIDE.md
-├── README.md                 Project overview and setup instructions
-├── LICENSE                   Project license
-├── CONTRIBUTING.md           Guidelines for contributing
-├── CHANGELOG.md              Record of changes
-└── .gitignore
-
----
-
-Documentation
-
-Detailed documentation is available in the /docs directory:
-
-- ARCHITECTURE.md: Application architecture overview.
-- API_DOCUMENTATION.md: RESTful API endpoints and usage.
-- SETUP_GUIDE.md: Development environment setup instructions.
-- DEPLOYMENT_GUIDE.md: Deployment process using Docker and AWS.
-- TESTING_GUIDE.md: Running and writing tests.
-- STYLE_GUIDE.md: Coding standards and practices.
-- SECURITY_POLICY.md: Security measures and reporting guidelines.
-- ROADMAP.md: Future development plans.
-- ENVIRONMENT_VARIABLES.md: Environment variables used in the project.
-- DATABASE_SCHEMA.md: Database design and schema.
-- DIAGRAMS/: Visual diagrams supporting documentation.
-- GLOSSARY.md: Definitions of terms and acronyms.
-- FAQ.md: Frequently asked questions.
-- SCRIPTS_GUIDE.md: Custom scripts and commands.
-- DATA_PRIVACY.md: Data privacy policies.
-- PERFORMANCE_GUIDE.md: Performance optimization information.
-
----
-
-Contributing
-
-We welcome contributions from the community.
-
-- Please read the CONTRIBUTING.md file for guidelines on how to contribute.
-- Follow the code standards outlined in docs/STYLE_GUIDE.md.
-- Ensure all tests pass before submitting a pull request.
-
----
-
-License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
-
----
-
-Contact
-
-For questions or suggestions, please contact the project maintainers:
-
-- Email: contact@example.com
-- GitHub Issues: https://github.com/yourusername/next-gen-messaging-app/issues
-
----
+We welcome contributions! See [TODO.md](TODO.md) for:
+- Project roadmap
+- Development workflow
+- Testing guidelines
+- Deployment instructions
 ```
