@@ -1,1 +1,4 @@
-npx lint-staged
+#!/bin/sh
+
+# Run lint-staged for incremental checks (includes linting and related tests)
+npx lint-staged || exit 1

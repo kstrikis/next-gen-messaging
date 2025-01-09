@@ -6,47 +6,32 @@
 
 **User Story**: _As a developer, I want to set up the initial project structure and configurations so that the development team can start building the application efficiently and maintain code quality._
 
-- [ ] **Initialize Git Repository**
+- [x] **Initialize Git Repository**
 
   - Initialize a Git repository with appropriate `.gitignore` files for Node.js, React.js, Next.js, and Cypress.
 
-- [ ] **Set Up Directory Structure**
+- [x] **Set Up Directory Structure**
 
   - Set up the directory structure as per the provided `directory-structure.md`:
     - `/client` - React.js frontend with Next.js and Tailwind CSS
     - `/server` - Node.js backend with Express.js
     - `/cypress` - End-to-end tests
 
-- [ ] **Configure Code Quality Tools**
+- [x] **Configure Code Quality Tools**
 
   - Configure ESLint with Airbnb style guide.
   - Set up Prettier for code formatting.
   - Ensure linting and formatting tools are correctly integrated.
 
-- [ ] **Initialize Package Management**
+- [x] **Initialize Package Management**
   - Initialize `package.json` files for `client`, `server`, and `cypress` to manage dependencies.
-- [ ] **Verify Setup**
+- [x] **Verify Setup**
   - Verify that the folder structure and initial files exist as intended.
   - Ensure that the development environment is ready for further tasks.
 
 ---
 
-### Task 2: Set Up Continuous Integration (CI) Pipeline
-
-**User Story**: _As a developer, I want automated testing and linting on code changes so that code quality is maintained, and issues are caught early._
-
-- [ ] **Configure GitHub Actions**
-
-  - Set up workflows for automated testing and linting on push and pull requests.
-  - Include separate workflows for `client`, `server`, and `cypress` tests.
-
-- [ ] **Verify CI Pipeline**
-  - Push a test commit to ensure that the CI pipeline runs and passes for the initial setup.
-  - Fix any issues that arise during the CI process.
-
----
-
-### Task 3: Backend Setup with Express.js and PostgreSQL
+### Task 2: Backend Setup with Express.js and PostgreSQL
 
 **User Story**: _As a developer, I want a functioning backend server with a database connection so that API endpoints can be developed and tested._
 
@@ -66,14 +51,14 @@
 
 ---
 
-### Task 4: Implement User Model and Migrations
+### Task 3: Implement User Model and Migrations
 
 **User Story**: _As a developer, I want to define the user model and database schema so that user data can be accurately stored and retrieved._
 
 - [ ] **Define User Model**
 
   - Use Prisma to define the `User` model with fields:
-    - `id`, `username`, `email`, `password_hash`, `profile_picture`, `is_guest`, `created_at`, `updated_at`.
+    - `id`, `username`, `email`, `passwordHash`, `profilePicture`, `isGuest`, `createdAt`, `updatedAt`.
 
 - [ ] **Create Migrations**
 
@@ -83,6 +68,21 @@
 - [ ] **Write Unit Tests**
   - Write unit tests for the `User` model to validate data integrity and constraints.
   - Ensure validations for fields like email format and password strength.
+
+---
+
+### Task 4: Set Up Continuous Integration (CI) Pipeline
+
+**User Story**: _As a developer, I want automated testing and linting on code changes so that code quality is maintained, and issues are caught early._
+
+- [ ] **Configure GitHub Actions**
+
+  - Set up workflows for automated testing and linting on push and pull requests.
+  - Include separate workflows for `client`, `server`, and `cypress` tests.
+
+- [ ] **Verify CI Pipeline**
+  - Push a test commit to ensure that the CI pipeline runs and passes for the initial setup.
+  - Fix any issues that arise during the CI process.
 
 ---
 
@@ -132,7 +132,7 @@
 - [ ] **Create Guest Access Endpoint**
 
   - Implement `POST /api/auth/guest` endpoint to create guest user sessions.
-  - Assign a unique identifier and set `is_guest` flag for guest users.
+  - Assign a unique identifier and set `isGuest` flag for guest users.
 
 - [ ] **Limit Guest Permissions**
 
@@ -254,7 +254,7 @@
 - [ ] **Define Channel Model**
 
   - Use Prisma to define the `Channel` model with fields:
-    - `id`, `name`, `is_private`, `description`, `created_at`, `updated_at`.
+    - `id`, `name`, `isPrivate`, `description`, `createdAt`, `updatedAt`.
 
 - [ ] **Create Channel Migrations**
 
@@ -271,7 +271,7 @@
 - [ ] **Define Message Model**
 
   - Use Prisma to define the `Message` model with fields:
-    - `id`, `content`, `user_id`, `channel_id`, `created_at`, `updated_at`.
+    - `id`, `content`, `userId`, `channelId`, `createdAt`, `updatedAt`.
 
 - [ ] **Create Message Migrations**
 
@@ -476,7 +476,7 @@
 
 - [ ] **Manage Guest Users**
 
-  - Store guest users in the `users` table with an `is_guest` flag.
+  - Store guest users in the `users` table with an `isGuest` flag.
   - Track guest user sessions appropriately.
 
 - [ ] **Write Tests**
@@ -668,7 +668,7 @@
 
 - [ ] **Modify Database Schema**
 
-  - Update the `Message` model to include a `thread_id` field.
+  - Update the `Message` model to include a `threadId` field.
   - Create a `Thread` model to represent message threads.
 
 - [ ] **Create Migrations**
@@ -751,7 +751,7 @@
 - [ ] **Update Models for Direct Messages**
 
   - Define `DirectMessage` model.
-  - Include fields: `id`, `sender_id`, `receiver_id`, `content`, `created_at`.
+  - Include fields: `id`, `senderId`, `receiverId`, `content`, `createdAt`.
 
 - [ ] **Implement Direct Messaging Endpoints**
 
