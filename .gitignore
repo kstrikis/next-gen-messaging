@@ -2,10 +2,15 @@
 node_modules/
 .pnp/
 .pnp.js
+package-lock.json
+yarn.lock
 
 # Testing
 coverage/
 .nyc_output/
+cypress/videos/
+cypress/screenshots/
+storybook-static/
 
 # Production
 build/
@@ -19,28 +24,83 @@ out/
 .env.development.local
 .env.test.local
 .env.production.local
+.env*.local
 
 # Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+debug.log
+*.log
 
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
+.history/
+*.sublime-workspace
+*.sublime-project
 
 # OS
 .DS_Store
 Thumbs.db
+*.pem
 
 # Prisma
 prisma/*.db
 prisma/migrations/
+*.sqlite
+*.sqlite-journal
+
+# Next.js
+.next/
+.vercel/
+next-env.d.ts
+.env*.local
+
+# Cache
+.cache/
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
 
 # Misc
 *.log
 *.pid
 *.seed
 *.pid.lock
+.tmp/
+temp/
+
+# AWS
+.aws/
+.elasticbeanstalk/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# TypeScript
+*.tsbuildinfo
+
+# Storybook
+storybook-static/
+build-storybook.log
