@@ -6,6 +6,7 @@ import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
 import importPlugin from 'eslint-plugin-import';
 import prettierConfig from 'eslint-config-prettier';
 import storybookPlugin from 'eslint-plugin-storybook';
+import cypressPlugin from 'eslint-plugin-cypress';
 
 export default [
   js.configs.recommended,
@@ -22,6 +23,7 @@ export default [
         ...globals.node,
         ...globals.es2021,
         ...globals.jest,
+        ...cypressPlugin.environments.globals.globals,
       },
       parserOptions: {
         ecmaFeatures: {
@@ -35,6 +37,7 @@ export default [
       'jsx-a11y': jsxA11yPlugin,
       import: importPlugin,
       storybook: storybookPlugin,
+      cypress: cypressPlugin,
     },
     rules: {
       // Airbnb style rules
@@ -66,6 +69,7 @@ export default [
       ...jsxA11yPlugin.configs.recommended.rules,
       ...importPlugin.configs.recommended.rules,
       ...storybookPlugin.configs.recommended.rules,
+      ...cypressPlugin.configs.recommended.rules,
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
       'react/no-unknown-property': ['error', { ignore: ['jsx', 'global', 'cmdk-input-wrapper'] }],
@@ -89,6 +93,12 @@ export default [
       next: {
         rootDir: 'client',
       },
+    },
+  },
+  {
+    files: ['server/**/*.js'],
+    rules: {
+      'no-console': 'off',
     },
   },
   prettierConfig,
