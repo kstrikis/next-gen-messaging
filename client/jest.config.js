@@ -1,4 +1,4 @@
-export default {
+const jestConfig = {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   moduleNameMapper: {
@@ -33,3 +33,5 @@ export default {
     },
   },
 };
+
+export default jestConfig;
