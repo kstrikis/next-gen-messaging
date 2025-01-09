@@ -20,24 +20,27 @@
     "test:server": "cd server && npm test"
   },
   "lint-staged": {
-    "client/**/*.{js,jsx}": "cd client && eslint --fix",
-    "server/**/*.{js,jsx}": "cd server && eslint --fix",
-    "**/*.{json,md}": "prettier --write"
+    "client/**/*.{js,jsx}": "cd client && eslint --fix --format=stylish",
+    "server/**/*.{js,jsx}": "cd server && eslint --fix --format=stylish",
+    "**/*.{json,md}": "prettier --write --list-different"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@eslint/js": "^9.17.0",
+    "@babel/eslint-parser": "^7.25.9",
+    "@eslint/js": "^8.57.1",
     "concurrently": "^9.1.2",
     "eslint": "^8.57.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-alias": "^1.1.2",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-react": "^7.37.3",
     "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-storybook": "^0.11.2",
     "globals": "^15.14.0",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
