@@ -1,1 +1,16 @@
-npm test
+#!/bin/sh
+
+# Store the root directory
+ROOT_DIR=$(pwd)
+
+# Run full test suite before push
+npm run test:all || exit 1
+
+# Build client
+cd "$ROOT_DIR/client" && npm run build || exit 1
+
+# Build server
+cd "$ROOT_DIR/server" && npm run build || exit 1
+
+# Return to root directory
+cd "$ROOT_DIR"

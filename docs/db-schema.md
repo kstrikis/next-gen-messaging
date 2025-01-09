@@ -5,35 +5,37 @@ To create a database schema diagram for the ChatGenius project, we will focus on
 **Core Entities and Relationships:**
 
 1. **User Management Context**
+
    - **User**
-     - Attributes: `UserID` (PK), `Email`, `FullName`, `PasswordHash`, `ProfilePicture`, `StatusMessage`, `OnlineStatus`
+     - Attributes: `id` (PK), `email`, `fullName`, `passwordHash`, `profilePicture`, `statusMessage`, `onlineStatus`
      - Relationships: One-to-Many with `Session`, One-to-Many with `ProfileSetting`
    - **Session**
-     - Attributes: `SessionID` (PK), `UserID` (FK), `Token`, `LastActive`
+     - Attributes: `id` (PK), `userId` (FK), `token`, `lastActive`
    - **ProfileSetting**
-     - Attributes: `SettingID` (PK), `UserID` (FK), `LanguagePreference`, `PrivacyOptions`
+     - Attributes: `id` (PK), `userId` (FK), `languagePreference`, `privacyOptions`
 
 2. **Messaging Context**
+
    - **Message**
-     - Attributes: `MessageID` (PK), `ChannelID` (FK), `SenderID` (FK), `Content`, `Timestamp`, `ThreadID` (optional FK)
+     - Attributes: `id` (PK), `channelId` (FK), `senderId` (FK), `content`, `timestamp`, `threadId` (optional FK)
    - **Thread**
-     - Attributes: `ThreadID` (PK), `ChannelID` (FK), `StarterMessageID` (FK)
+     - Attributes: `id` (PK), `channelId` (FK), `starterMessageId` (FK)
      - Relationships: One-to-Many with `Message`
    - **Channel**
-     - Attributes: `ChannelID` (PK), `Name`, `PrivacyLevel`, `Description`
+     - Attributes: `id` (PK), `name`, `privacyLevel`, `description`
      - Relationships: One-to-Many with `Message`, Many-to-Many with `User` via `ChannelMember`
    - **ChannelMember**
-     - Attributes: `ChannelMemberID` (PK), `ChannelID` (FK), `UserID` (FK), `Role`
+     - Attributes: `id` (PK), `channelId` (FK), `userId` (FK), `role`
    - **File**
-     - Attributes: `FileID` (PK), `UploaderID` (FK), `ChannelID` (optional FK), `MessageID` (optional FK), `FilePath`
+     - Attributes: `id` (PK), `uploaderId` (FK), `channelId` (optional FK), `messageId` (optional FK), `filePath`
 
 3. **AI Avatar Context**
    - **Avatar**
-     - Attributes: `AvatarID` (PK), `UserID` (FK), `Style`, `VoiceProfileID` (FK), `GestureProfileID` (FK)
+     - Attributes: `id` (PK), `userId` (FK), `style`, `voiceProfileId` (FK), `gestureProfileId` (FK)
    - **VoiceProfile**
-     - Attributes: `VoiceProfileID` (PK), `Name`, `SampleData`
+     - Attributes: `id` (PK), `name`, `sampleData`
    - **Gesture**
-     - Attributes: `GestureID` (PK), `Name`, `Data`
+     - Attributes: `id` (PK), `name`, `data`
 
 **Schema Diagram Explanation:**
 

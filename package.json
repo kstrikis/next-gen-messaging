@@ -11,18 +11,43 @@
     "prepare": "husky",
     "dev:client": "cd client && npm run dev",
     "dev:server": "cd server && npm run dev",
-    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev": "concurrently \"cd client && npm run dev\" \"cd server && npm run dev\"",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{js,jsx,json,md}\"",
-    "test": "npm run test:client && npm run test:server",
+    "test": "npm run test:all",
+    "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "test:unit": "npm run test:client && npm run test:server",
+    "test:integration": "cd server && npm run test:integration",
+    "test:e2e": "cypress run",
+    "test:e2e:open": "cypress open",
     "test:client": "cd client && npm test",
-    "test:server": "cd server && npm test"
+    "test:server": "cd server && npm test",
+    "test:watch": "npm run test:unit -- --watch",
+    "test:coverage": "npm run test:unit -- --coverage",
+    "test:ci": "npm run test:all -- --ci --coverage",
+    "test:local-ci": "act -j test --container-architecture linux/amd64 --reuse",
+    "storybook": "cd client && npm run storybook",
+    "build-storybook": "cd client && npm run build-storybook",
+    "validate": "npm run lint && npm run test:unit",
+    "build": "cd client && npm run build && cd ../server && npm run build",
+    "build:client": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    "clean": "rm -rf node_modules client/node_modules server/node_modules",
+    "clean:build": "rm -rf client/.next server/dist",
+    "install:all": "npm i && cd client && npm i && cd ../server && npm i",
+    "update:all": "npm update && cd client && npm update && cd ../server && npm update"
   },
   "lint-staged": {
-    "client/**/*.{js,jsx}": "cd client && eslint --fix --format=stylish",
-    "server/**/*.{js,jsx}": "cd server && eslint --fix --format=stylish",
-    "**/*.{json,md}": "prettier --write --list-different"
+    "client/**/*.{js,jsx}": [
+      "cd client && eslint --fix",
+      "cd client && npm run test:related"
+    ],
+    "server/**/*.{js,jsx}": [
+      "cd server && eslint --fix",
+      "cd server && npm run test:related"
+    ],
+    "**/*.{json,md}": "prettier --write"
   },
   "keywords": [],
   "author": "",
@@ -31,10 +56,12 @@
     "@babel/eslint-parser": "^7.25.9",
     "@eslint/js": "^8.57.1",
     "concurrently": "^9.1.2",
+    "cypress": "^13.17.0",
     "eslint": "^8.57.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-alias": "^1.1.2",
+    "eslint-plugin-cypress": "^3.6.0",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-prettier": "^5.2.1",
@@ -45,5 +72,9 @@
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
     "prettier": "^3.4.2"
+  },
+  "dependencies": {
+    "glob": "^11.0.0",
+    "rimraf": "^6.0.1"
   }
 }
