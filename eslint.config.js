@@ -11,7 +11,17 @@ import cypressPlugin from 'eslint-plugin-cypress';
 export default [
   js.configs.recommended,
   {
-    ignores: ['node_modules/**', 'build/**', 'dist/**', 'coverage/**', '.next/**', '*.config.js'],
+    ignores: [
+      '**/node_modules/**',
+      '**/build/**',
+      '**/dist/**',
+      '**/coverage/**',
+      '**/.next/**',
+      '**/storybook-static/**',
+      '**/*.min.js',
+      '**/vendor/**',
+      '**/public/**',
+    ],
   },
   {
     files: ['**/*.{js,jsx,mjs}'],
@@ -77,7 +87,7 @@ export default [
     },
     settings: {
       react: {
-        version: 'detect',
+        version: '18.2.0',
       },
       'import/resolver': {
         node: {
