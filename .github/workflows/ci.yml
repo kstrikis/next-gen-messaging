@@ -85,10 +85,10 @@ jobs:
       - name: Run integration tests
         run: npm run test:integration
 
-      - name: Start server for E2E tests
+      - name: Install Cypress dependencies
         run: |
-          cd server && NODE_ENV=test npm run dev &
-          sleep 10
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
 
       - name: Run E2E tests
         uses: cypress-io/github-action@v6

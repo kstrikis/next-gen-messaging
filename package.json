@@ -15,7 +15,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{js,jsx,json,md}\"",
-    "test": "npm run test:all",
+    "test": "npm run lint && npm run test:all",
     "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
     "test:unit": "npm run test:client && npm run test:server",
     "test:integration": "cd server && npm run test:integration",
@@ -26,7 +26,7 @@
     "test:watch": "npm run test:unit -- --watch",
     "test:coverage": "npm run test:unit -- --coverage",
     "test:ci": "npm run test:all -- --ci --coverage",
-    "test:local-ci": "act -j test --container-architecture linux/amd64 --reuse",
+    "test:local-ci": "trap 'docker ps -q | xargs -r docker stop; docker ps -aq | xargs -r docker rm' EXIT; act -j test --container-architecture linux/amd64 --reuse --rm",
     "storybook": "cd client && npm run storybook",
     "build-storybook": "cd client && npm run build-storybook",
     "validate": "npm run lint && npm run test:unit",
@@ -36,7 +36,8 @@
     "clean": "rm -rf node_modules client/node_modules server/node_modules",
     "clean:build": "rm -rf client/.next server/dist",
     "install:all": "npm i && cd client && npm i && cd ../server && npm i",
-    "update:all": "npm update && cd client && npm update && cd ../server && npm update"
+    "update:all": "npm update && cd client && npm update && cd ../server && npm update",
+    "start": "cd server && npm start"
   },
   "lint-staged": {
     "client/**/*.{js,jsx}": [
@@ -71,7 +72,8 @@
     "globals": "^15.14.0",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
-    "prettier": "^3.4.2"
+    "prettier": "^3.4.2",
+    "tcp-port-used": "^1.0.2"
   },
   "dependencies": {
     "glob": "^11.0.0",

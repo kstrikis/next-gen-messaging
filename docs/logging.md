@@ -145,3 +145,40 @@ The logger includes special handling for:
 - Unhandled rejections
 - Graceful shutdown
 - Logging system errors
+
+### Error Schema
+
+```javascript
+// Error log format
+{
+  level: 'error',
+  message: string,
+  timestamp: ISOString,
+  metadata: {
+    error: {
+      message: string,
+      stack: string,
+      type?: string
+    },
+    context?: {
+      route?: string,
+      requestId?: string,
+      userId?: string
+    }
+  }
+}
+
+// Error response format
+{
+  error: string,
+  code?: number,
+  details?: object
+}
+```
+
+### Testing Considerations
+
+- Use error middleware pattern with `next(error)`
+- Allow async operations to complete (100ms buffer)
+- Verify both response format and log entries
+- Use separate test log files

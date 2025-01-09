@@ -2,6 +2,7 @@ import winston from 'winston';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import stackTrace from 'stack-trace';
+import fs from 'fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -13,6 +14,11 @@ const config = {
   maxLogSize: 10 * 1024 * 1024, // 10MB
   maxFiles: 5,
 };
+
+// Ensure log directory exists
+if (!fs.existsSync(config.logDir)) {
+  fs.mkdirSync(config.logDir, { recursive: true });
+}
 
 // Custom log levels with corrected priorities
 const levels = {
@@ -77,11 +83,6 @@ const prodFormat = winston.format.combine(
   winston.format.json(),
 );
 
-// Create a basic console transport for logging initialization errors
-const emergencyTransport = new winston.transports.Console({
-  format: winston.format.simple(),
-});
-
 // Create the logger with proper error handling
 const logger = winston.createLogger({
   levels,
@@ -91,6 +92,8 @@ const logger = winston.createLogger({
     // Console transport for immediate feedback
     new winston.transports.Console({
       format: config.isDevelopment ? devFormat : prodFormat,
+      handleExceptions: true,
+      handleRejections: true,
     }),
     
     // Error logs (highest priority)
@@ -99,6 +102,9 @@ const logger = winston.createLogger({
       level: 'error',
       maxsize: config.maxLogSize,
       maxFiles: config.maxFiles,
+      handleExceptions: true,
+      handleRejections: true,
+      sync: true, // Synchronous writes for crash logs
     }),
 
     // Combined logs for info and above
@@ -122,20 +128,16 @@ const logger = winston.createLogger({
   exitOnError: false,
 });
 
-// Handle logging errors gracefully
-logger.on('error', (error) => {
-  // Use the emergency transport directly to log errors
-  emergencyTransport.log({
-    level: 'error',
-    message: 'Logging error occurred',
-    error: error.message,
-    stack: error.stack,
-  });
-});
-
 // Ensure logs are written before exit
-process.on('exit', () => {
-  logger.end();
+process.on('exit', (code) => {
+  if (code !== 0) {
+    const errorMsg = `Process exiting with code ${code}`;
+    // Force sync write to error log
+    fs.appendFileSync(
+      path.join(config.logDir, 'error.log'),
+      `${new Date().toISOString()} [error]: ${errorMsg}\n`
+    );
+  }
 });
 
 // Handle uncaught exceptions and unhandled rejections

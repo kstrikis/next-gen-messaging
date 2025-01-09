@@ -25,6 +25,29 @@
   cd client && npm test
   ```
 
+### Testing Error Handling
+
+Error test schema:
+
+````javascript
+// Test structure
+describe('Error Handling', () => {
+  it('should handle [error-type]', async () => {
+    // 1. Setup error condition
+    // 2. Trigger error
+    // 3. Verify response format
+    // 4. Verify log entry
+  });
+});
+
+// Required test cases
+{
+  'api/health': ['service-down'],
+  'api/users/*': ['auth', 'validation', 'not-found'],
+  'database': ['connection', 'query', 'constraint'],
+  'external-services': ['timeout', 'invalid-response']
+}
+
 ### 2. Integration Tests
 
 - Location: `server/tests/integration/*.test.js`
@@ -35,7 +58,7 @@
   # Run integration tests
   npm run test:integration
   cd server && npm run test:integration
-  ```
+````
 
 ### 3. End-to-End Tests
 
