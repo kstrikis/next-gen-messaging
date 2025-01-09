@@ -20,13 +20,9 @@
     "test:server": "cd server && npm test"
   },
   "lint-staged": {
-    "*.{js,jsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md}": [
-      "prettier --write"
-    ]
+    "client/**/*.{js,jsx}": "cd client && eslint --fix",
+    "server/**/*.{js,jsx}": "cd server && eslint --fix",
+    "**/*.{json,md}": "prettier --write"
   },
   "keywords": [],
   "author": "",
