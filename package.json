@@ -1,0 +1,49 @@
+{
+  "name": "chatgenius2",
+  "version": "1.0.0",
+  "description": "A modern messaging platform with AI-powered features, built using Domain-Driven Design principles. ChatGenius combines Slack-like functionality with advanced AI capabilities for enhanced workplace communication.",
+  "main": "index.js",
+  "type": "module",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "prepare": "husky",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{js,jsx,json,md}\"",
+    "test": "npm run test:client && npm run test:server",
+    "test:client": "cd client && npm test",
+    "test:server": "cd server && npm test"
+  },
+  "lint-staged": {
+    "client/**/*.{js,jsx}": "cd client && eslint --fix --format=stylish",
+    "server/**/*.{js,jsx}": "cd server && eslint --fix --format=stylish",
+    "**/*.{json,md}": "prettier --write --list-different"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.25.9",
+    "@eslint/js": "^8.57.1",
+    "concurrently": "^9.1.2",
+    "eslint": "^8.57.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-import-resolver-alias": "^1.1.2",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-react": "^7.37.3",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-storybook": "^0.11.2",
+    "globals": "^15.14.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
+    "prettier": "^3.4.2"
+  }
+}
