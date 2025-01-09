@@ -19,7 +19,7 @@ jobs:
           POSTGRES_DB: chatgenius_test
           POSTGRES_HOST_AUTH_METHOD: trust
         ports:
-          - 5433:5432
+          - 5432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -27,7 +27,7 @@ jobs:
           --health-retries 5
 
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5433/chatgenius_test?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/chatgenius_test?schema=public
 
     steps:
       - uses: actions/checkout@v4

@@ -90,7 +90,7 @@ services:
       POSTGRES_DB: chatgenius_test
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
-      - 5433:5432
+      - 5432:5432
 ```
 
 For local development:
@@ -103,13 +103,13 @@ For local development:
 
 2. Run migrations:
    ```bash
-   cd server && DATABASE_URL="postgresql://postgres:postgres@localhost:5433/chatgenius_test?schema=public" npx prisma migrate deploy
+   cd server && DATABASE_URL="postgresql://postgres:postgres@localhost:5432/chatgenius_test?schema=public" npx prisma migrate deploy
    ```
 
 The test database configuration is defined in `.env.test` and `server/.env.test`:
 
 ```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5433/chatgenius_test?schema=public"
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/chatgenius_test?schema=public"
 ```
 
 ## Test Coverage Requirements
