@@ -9,14 +9,7 @@ import prettierConfig from 'eslint-config-prettier';
 export default [
   js.configs.recommended,
   {
-    ignores: [
-      'node_modules/**',
-      'build/**',
-      'dist/**',
-      'coverage/**',
-      '.next/**',
-      '*.config.js',
-    ],
+    ignores: ['node_modules/**', 'build/**', 'dist/**', 'coverage/**', '.next/**', '*.config.js'],
   },
   {
     files: ['**/*.{js,jsx,mjs}'],
@@ -27,6 +20,7 @@ export default [
         ...globals.browser,
         ...globals.node,
         ...globals.es2021,
+        ...globals.jest,
       },
       parserOptions: {
         ecmaFeatures: {
@@ -62,4 +56,4 @@ export default [
     },
   },
   prettierConfig,
-]; 
+];
