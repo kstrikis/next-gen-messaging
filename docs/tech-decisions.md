@@ -4,224 +4,292 @@ This document outlines the key technical decisions made for the ChatGenius proje
 
 ## Frontend
 
-### React 18 vs 19
+### Core Technologies
 
-- Currently using React 18.2.0 instead of React 19
-- Main reason: Auth0 React SDK compatibility (only supports up to React 18)
-- Will upgrade once Auth0 adds React 19 support
+1. **React 18**
 
-### Next.js 15
+   - Using React 18.2.0 instead of React 19
+   - Main reason: Auth0 React SDK compatibility
+   - Will upgrade once Auth0 adds React 19 support
 
-- Using the latest version (15.1.4)
-- Provides improved performance and features
-- Compatible with React 18
-- Includes built-in optimizations for static and server-side rendering
+2. **Next.js 15**
 
-### UI Components
+   - Using latest version (15.1.4)
+   - Improved performance and features
+   - Compatible with React 18
+   - Built-in optimizations for SSR
 
-- **Tailwind CSS**: Chosen for utility-first approach and excellent developer experience
-- **shadcn/ui**: Selected for:
-  - High-quality, accessible components
-  - Built on Radix UI primitives
-  - Easy customization with Tailwind
-  - No vendor lock-in (components are copied into the project)
+3. **UI Components**
 
-### State Management
+   - Tailwind CSS for utility-first styling
+   - shadcn/ui for accessible, customizable components
+   - Built on Radix UI primitives
+   - No vendor lock-in
 
-- **Redux Toolkit**: Chosen for:
-  - Simplified Redux setup
-  - Built-in immutability with Immer
-  - Reduced boilerplate
-  - TypeScript support
-- **Redux Persist**: Added for state persistence across sessions
-- **React Query**: Used for server state management and caching
+4. **State Management**
+   - Redux Toolkit for global state
+   - Redux Persist for session persistence
+   - React Query for server state
+   - React hooks for local state
+   - Context for shared state
 
-## Backend
+### Frontend Patterns
 
-### Node.js & Express
+1. **Component Structure**
 
-- Using Node.js for JavaScript/ECMAScript consistency across the stack
-- Express.js for its:
-  - Minimal, unopinionated framework
-  - Large ecosystem
-  - Easy middleware integration
-  - Excellent performance
+   - Use shadcn/ui as base building blocks
+   - Extend with compound components
+   - Follow React.forwardRef pattern
+   - Use displayName for debugging
+   - Keep components focused and small
 
-### Database
+2. **Styling**
 
-- **PostgreSQL**: Selected for:
-  - ACID compliance
-  - Rich feature set
-  - Excellent performance
-  - Strong community support
-- **Prisma**: Chosen as ORM for:
-  - Type safety
-  - Auto-generated migrations
-  - Excellent developer experience
-  - Built-in connection pooling
-
-### Real-time Communication
-
-- **Socket.IO**: Selected for:
-  - WebSocket support with fallbacks
-  - Room/namespace support
-  - Built-in reconnection logic
-  - Broadcasting capabilities
-
-## Testing
-
-### Multiple Testing Layers
-
-- **Jest**: Unit testing
-- **React Testing Library**: Component testing
-- **SuperTest**: API testing
-- **Cypress**: End-to-end testing
-- **Storybook**: Component development and visual testing
-
-## Code Quality
-
-### ESLint & Prettier
-
-- ESLint v9 with Airbnb config for consistent code style
-- Prettier for automatic code formatting
-- Configured to work together without conflicts
-
-### Version Control & CI
-
-- Git for version control
-- Husky for Git hooks
-- GitHub Actions planned for CI/CD
-
-## Security
-
-### Authentication
-
-- **Auth0**: Chosen for:
-  - Robust security features
-  - Social login support
-  - JWT handling
-  - MFA support
-  - Enterprise features
-
-### API Security
-
-- **Helmet**: Security headers
-- **CORS**: Cross-origin resource sharing
-- **Rate Limiting**: Protection against abuse
-- Environment variables for sensitive data
-
-## Monitoring & Logging
-
-### Frontend Logging
-
-- **LogRocket**: Selected for:
-  - Session replay capabilities
-  - Error tracking with stack traces
-  - Performance monitoring
-  - Network request monitoring
-  - Console logs capture
-  - Redux state tracking
-  - Easy integration with React
-
-### Backend Logging
-
-- **Winston**: Chosen for:
-  - Structured logging
-  - Multiple transports
-  - Custom log levels
-  - Excellent performance
-  - Rich metadata support
-
-### ESLint Configuration
-
-- Custom rules to enforce:
-  - LogRocket usage in frontend
-  - Winston usage in backend
-  - No console.\* statements
-  - Proper error handling
-
-## Future Considerations
-
-1. **React 19 Upgrade**
-
-   - Monitor Auth0 React SDK for React 19 support
-   - Plan upgrade when compatibility is confirmed
-
-2. **Database Scaling**
-
-   - Consider connection pooling optimization
-   - Plan for read replicas if needed
-   - Evaluate caching strategies
-
-3. **Monitoring & Logging**
-
-   - Implement comprehensive logging strategy
-   - Set up monitoring and alerting
-   - Consider APM solutions
-
-4. **Performance Optimization**
-   - Implement code splitting
-   - Add service worker for offline support
-   - Optimize asset delivery
-
-## Frontend Patterns
-
-1. Testing:
-
-   - Use `data-testid` for form elements and other test-specific selectors
-   - Avoid redundant ARIA roles (e.g., `role="form"` on `<form>` elements)
-   - Prefer semantic queries (getByRole, getByLabelText) over test IDs when possible
-   - Use Testing Library's user-centric queries
-
-2. Component Structure:
-
-   - Use shadcn/ui components as base building blocks
-   - Extend with compound components for complex features
-   - Follow React.forwardRef pattern for all components
-   - Use displayName for better debugging
-
-3. Styling:
-
-   - Use Tailwind CSS with cn utility for class merging
-   - Follow class-variance-authority (cva) for variant patterns
-   - Maintain consistent className ordering:
+   - Tailwind CSS with cn utility
+   - class-variance-authority (cva) for variants
+   - Consistent className ordering:
      1. Layout (flex, grid, position)
      2. Spacing (padding, margin)
      3. Visual (colors, borders)
      4. Interactive states (hover, focus)
 
-4. Accessibility:
+3. **Accessibility**
 
-   - Add ARIA labels to interactive elements
-   - Use semantic HTML elements
-   - Implement proper keyboard navigation
-   - Ensure focus management in modals/overlays
+   - ARIA labels for interactive elements
+   - Semantic HTML elements
+   - Proper keyboard navigation
+   - Focus management in modals/overlays
 
-5. State Management:
+4. **Error Handling**
 
-   - Use React hooks for local state
-   - Implement context for shared state
-   - Plan Redux integration for global state
-   - Follow event delegation patterns
+   - try/catch blocks
+   - Error boundaries
+   - Contextual error logging
+   - User-friendly error messages
 
-6. Error Handling:
+5. **Code Organization**
+   - Feature-based directory structure
+   - Separate UI from business logic
+   - Clean exports with index files
+   - Consistent file naming
 
-   - Use try/catch blocks
-   - Implement error boundaries
-   - Log errors with context
-   - Show user-friendly error messages
+## Backend
 
-7. Logging:
+### Core Technologies
 
-   - Use emoji prefixes for better readability
-   - Log important state changes
-   - Include relevant context in log messages
-   - Follow severity levels (debug, info, warn, error)
+1. **Node.js & Express**
 
-8. Code Organization:
-   - Group related components in feature directories
-   - Separate UI components from business logic
-   - Keep components focused and small
-   - Use index files for clean exports
+   - JavaScript consistency across stack
+   - Minimal, unopinionated framework
+   - Large ecosystem
+   - Easy middleware integration
 
-## Backend Patterns
+2. **Database**
+
+   - PostgreSQL for ACID compliance
+   - Prisma ORM for type safety
+   - Auto-generated migrations
+   - Connection pooling
+
+3. **Real-time Communication**
+   - Socket.IO for WebSocket support
+   - Room/namespace capabilities
+   - Reconnection logic
+   - Broadcasting features
+
+### Security
+
+1. **Authentication**
+
+   - Auth0 for robust security
+   - Social login support
+   - JWT handling
+   - MFA capabilities
+
+2. **API Security**
+   - Helmet for security headers
+   - CORS configuration
+   - Rate limiting
+   - Environment variables
+
+## Testing Strategy
+
+### Frontend Testing
+
+1. **Component Tests (Jest + Testing Library)**
+
+   - Use data-testid for form elements
+   - Prefer semantic queries (getByRole, getByLabelText)
+   - Avoid redundant ARIA roles
+   - Mock complex dependencies
+   - Test user interactions
+   - Verify log messages
+   - Check component state changes
+
+2. **End-to-End Tests (Cypress)**
+
+   - Test critical user flows
+   - Verify API interactions
+   - Check real-time updates
+   - Monitor console logs
+   - Test error scenarios
+   - Validate UI states
+
+3. **Visual Testing (Storybook)**
+   - Document component variants
+   - Test responsive behavior
+   - Verify accessibility
+   - Showcase interactions
+   - Test edge cases
+
+### Backend Testing
+
+1. **Unit Tests (Jest)**
+
+   - Test business logic
+   - Mock external services
+   - Verify error handling
+   - Check log messages
+   - Test edge cases
+   - Validate input/output
+
+2. **Integration Tests (SuperTest)**
+   - Test API endpoints
+   - Verify database operations
+   - Check authentication
+   - Test error responses
+   - Validate logging
+   - Monitor performance
+
+### Test Environment & Best Practices
+
+1. **Environment Setup**
+
+   - Separate test database
+   - Mocked external services
+   - Controlled logging output
+   - Clean state between tests
+   - Predictable timestamps
+   - Transaction rollbacks
+
+2. **Organization**
+
+   - Group by feature/component
+   - Clear test descriptions
+   - Setup/teardown helpers
+   - Shared test utilities
+   - Consistent naming patterns
+
+3. **Coverage Requirements**
+
+   - Critical paths: 100%
+   - Business logic: 100%
+   - UI components: 80%+
+   - Error scenarios
+   - Edge cases
+   - Performance benchmarks
+
+4. **Test Data Management**
+   - Use factories/fixtures
+   - Avoid hardcoded values
+   - Clean up after tests
+   - Realistic test cases
+   - Cover edge cases
+
+## Logging Strategy
+
+### Frontend Logging (LogRocket)
+
+1. **Environment Configuration**
+
+   - Production: LogRocket + console
+   - Development: Console only
+   - Test: Cypress-interceptable
+   - Debug logs filtered in dev/test
+
+2. **Log Levels**
+
+   - error: Application errors
+   - warn: Non-critical issues
+   - info: State changes and actions
+   - debug: Detailed debugging
+   - state: Component state
+   - perf: Performance metrics
+   - flow: User journey
+   - feature: Implementation logs
+
+3. **Format & Structure**
+
+   - Emoji prefixes for scanning
+   - Structured metadata
+   - Consistent timestamps
+   - JSON in test environment
+
+4. **Helper Methods**
+   - trackFlow: Journey tracking
+   - measurePerf: Performance
+   - trackState: State changes
+
+### Backend Logging (Winston)
+
+1. **Transport Configuration**
+
+   - Console: All environments
+   - error.log: Sync writes
+   - combined.log: Info+
+   - development.log: Dev only
+
+2. **Format & Structure**
+
+   - Dev: Human-readable
+   - Prod: JSON format
+   - Key=value metadata
+   - Stack traces
+
+3. **Error Handling**
+
+   - Uncaught exceptions
+   - Unhandled rejections
+   - Process exit logging
+   - Synchronous crash logs
+
+4. **File Management**
+   - 10MB size limit
+   - 5 file rotation
+   - Auto-create directories
+   - Environment paths
+
+## Code Quality
+
+1. **Linting & Formatting**
+
+   - ESLint v8 (constrained by Airbnb config compatibility)
+   - Using new ESLint flat config system (eslint.config.js)
+   - Prettier integration
+   - Custom logging rules
+   - No console statements
+   - Airbnb style guide enforcement
+
+2. **Version Control**
+   - Husky git hooks
+   - Pre-commit linting
+   - Pre-push tests
+   - GitHub Actions CI/CD
+
+## Future Considerations
+
+1. **React 19 Upgrade**
+
+   - Monitor Auth0 compatibility
+   - Plan upgrade path
+
+2. **Database Scaling**
+
+   - Connection pooling
+   - Read replicas
+   - Caching strategy
+
+3. **Performance**
+   - Code splitting
+   - Service worker
+   - Asset optimization
