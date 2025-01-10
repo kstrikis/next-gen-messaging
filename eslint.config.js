@@ -55,7 +55,7 @@ export default [
       // Airbnb style rules
       'no-var': 'error',
       'prefer-const': 'error',
-      'no-unused-vars': 'error',
+      'no-unused-vars': ['error', { 'argsIgnorePattern': '^_' }],
       'no-console': 'error',
       'comma-dangle': ['error', 'always-multiline'],
       'quotes': ['error', 'single'],

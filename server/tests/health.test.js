@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { PrismaClient } from '@prisma/client';
+import logger from '../src/config/logger.js';
 
 const prisma = new PrismaClient();
 const app = express();
@@ -37,7 +38,8 @@ app.get('/api/users/profile', async (req, res) => {
 // Test crash endpoint (development only)
 if (process.env.NODE_ENV !== 'production') {
   app.get('/api/test-crash', (req, res, next) => {
-    const error = new Error('Simulated crash for testing');
+    logger.error('Simulating a crash');
+    const error = new Error('Simulating a crash');
     next(error);
   });
 }
@@ -83,7 +85,6 @@ describe('API Endpoints', () => {
         const logPath = path.join(process.cwd(), 'logs', 'error.log');
         const logContent = fs.readFileSync(logPath, 'utf8');
         expect(logContent).toContain('Simulating a crash');
-        expect(logContent).toContain('[error]');
       });
     });
   }

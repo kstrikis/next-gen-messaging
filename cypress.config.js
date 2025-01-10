@@ -26,43 +26,43 @@ export default defineConfig({
         }
       };
 
-      on('before:run', async () => {
-        logger.info('Initializing test environment...');
-
-        // Check and cleanup port
-        logger.info('Checking for processes on port 3001...');
-        const inUse = await tcpPortUsed.check(3001);
-        
-        if (inUse) {
-          logger.warn('Port 3001 is in use, attempting cleanup...');
-          cleanupPort();
-          // Wait a bit for the port to be released
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-        
-        logger.info('Starting test server...');
-
-        // Start server process using dev:server to match development environment
-        serverProcess = spawn('npm', ['run', 'dev'], {
-          stdio: 'inherit',
-          env: {
-            ...process.env,
-            NODE_ENV: 'test',
-            PORT: '3001',
-          },
-          detached: true, // Make it easier to kill the process tree
-        });
-
-        logger.info('Server process started with PID:', { pid: serverProcess.pid });
-
-        // Wait for server to be ready
-        try {
-          await tcpPortUsed.waitUntilUsed(3001, 500, 30000);
-        } catch (error) {
-          logger.error('Server failed to start:', { error: error.message });
-          throw error;
+      logger.info('Initializing test environment...');
+      cleanupPort();
+      
+      logger.info('Starting test server...');
+      serverProcess = spawn('npm', ['run', 'dev:server'], {
+        stdio: 'pipe',
+        detached: true,
+        env: {
+          ...process.env,
+          NODE_ENV: 'test',
+          PORT: '3001',
+          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/chatgenius_test?schema=public',
+          LOG_LEVEL: 'info',
+          RATE_LIMIT_WINDOW_MS: '0',
+          RATE_LIMIT_MAX_REQUESTS: '0'
         }
       });
+
+      serverProcess.stdout.on('data', (data) => {
+        logger.info('Server output:', { data: data.toString() });
+      });
+
+      serverProcess.stderr.on('data', (data) => {
+        logger.error('Server error output:', { data: data.toString() });
+      });
+
+      serverProcess.on('error', (err) => {
+        logger.error('Server process error:', { error: err.message });
+        throw err;
+      });
+
+      if (!serverProcess.pid) {
+        logger.error('Failed to start server process');
+        throw new Error('Server process failed to start');
+      }
+
+      logger.info('Server process started with PID:', { pid: serverProcess.pid });
 
       on('after:run', async () => {
         if (serverProcess) {

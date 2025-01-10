@@ -9,11 +9,18 @@ describe('API Endpoints', () => {
     });
   });
 
-  describe('Users API', () => {
-    it('should list users', () => {
-      cy.request('/api/users').then((response) => {
-        expect(response.status).to.eq(200);
-        expect(response.body).to.be.an('array');
+  describe('Error Handling', () => {
+    it('should handle malformed JSON', () => {
+      cy.request({
+        method: 'POST',
+        url: '/api/users/profile',
+        body: 'not-json',
+        failOnStatusCode: false,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }).then((response) => {
+        expect(response.status).to.eq(400);
       });
     });
   });

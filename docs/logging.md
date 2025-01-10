@@ -145,6 +145,17 @@ The logger includes special handling for:
 - Unhandled rejections
 - Graceful shutdown
 - Logging system errors
+- Node.js warnings (ExperimentalWarning and DeprecationWarning are automatically categorized as warnings)
+
+### Warning Handling
+
+Node.js process warnings (ExperimentalWarning and DeprecationWarning) are automatically detected and logged at the 'warn' level instead of 'error'. This ensures that:
+
+- Development warnings don't clutter error logs
+- Actual errors remain distinct from Node.js warnings
+- Warning messages maintain their visibility without triggering error alerts
+- Process stderr warnings are properly captured and categorized
+- Warnings in both direct messages and stderr data are handled consistently
 
 ### Error Schema
 

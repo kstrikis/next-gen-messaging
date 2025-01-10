@@ -28,6 +28,11 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/chatgenius_test?schema=public
+      NODE_ENV: test
+      PORT: 3001
+      LOG_LEVEL: error
+      RATE_LIMIT_WINDOW_MS: 0
+      RATE_LIMIT_MAX_REQUESTS: 0
 
     steps:
       - uses: actions/checkout@v4
@@ -90,10 +95,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y xvfb libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
 
+      - name: Start server for E2E tests
+        run: |
+          cd server
+          npm run dev &
+          npx wait-on -t 30000 http://localhost:3001/api/health
+
       - name: Run E2E tests
         uses: cypress-io/github-action@v6
         with:
           browser: chrome
+          working-directory: .
           wait-on: http://localhost:3001/api/health
           wait-on-timeout: 30
 

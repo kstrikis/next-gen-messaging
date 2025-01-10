@@ -1,14 +1,14 @@
 import winston from 'winston';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import stackTrace from 'stack-trace';
 import fs from 'fs';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// Helper to determine if we're in the server directory
+const isInServerDir = process.cwd().endsWith('server');
 
-// Configuration values that could be moved to environment variables
+// Configuration values from environment variables
 const config = {
-  logDir: path.join(__dirname, '../../logs'),
+  logDir: process.env.LOG_DIR || path.join(process.cwd(), isInServerDir ? 'logs' : 'server/logs'),
   defaultLevel: process.env.LOG_LEVEL || 'info',
   isDevelopment: process.env.NODE_ENV !== 'production',
   maxLogSize: 10 * 1024 * 1024, // 10MB
@@ -47,10 +47,33 @@ const colors = {
 // Add colors to winston
 winston.addColors(colors);
 
+// Custom format to handle Node.js warnings
+const handleNodeWarnings = winston.format((info) => {
+  if (info.message && typeof info.message === 'string') {
+    // Check for Node.js warning patterns in both message and data fields
+    const messageToCheck = typeof info.data === 'string' ? info.data : info.message;
+    if (messageToCheck.includes('ExperimentalWarning') || 
+        messageToCheck.includes('DeprecationWarning')) {
+      // If the warning is in the data field, move it to message
+      if (info.data) {
+        info.message = info.data;
+        delete info.data;
+      }
+      return { 
+        ...info,
+        level: 'warn',
+        [Symbol.for('level')]: 'warn'  // This is needed for Winston's internal level handling
+      };
+    }
+  }
+  return info;
+});
+
 // Development-focused format with reliable file/line tracking
 const devFormat = winston.format.combine(
   winston.format.timestamp({ format: 'HH:mm:ss.SSS' }),
-  winston.format.colorize({ all: true }),
+  handleNodeWarnings(),
+  winston.format.colorize({ all: false }),
   winston.format.printf(({ level, message, timestamp, ...metadata }) => {
     let msg = `${timestamp} [${level}]: ${message}`;
     
@@ -79,6 +102,7 @@ const devFormat = winston.format.combine(
 
 // Production format (JSON-based for better parsing)
 const prodFormat = winston.format.combine(
+  handleNodeWarnings(),
   winston.format.timestamp(),
   winston.format.json(),
 );

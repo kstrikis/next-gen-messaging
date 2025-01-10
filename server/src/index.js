@@ -5,7 +5,6 @@ import { PrismaClient } from '@prisma/client';
 import 'dotenv/config';
 import logger from './config/logger.js';
 
-const prisma = new PrismaClient();
 const app = express();
 const port = process.env.PORT || 3001;
 
@@ -14,16 +13,32 @@ app.use(cors());
 app.use(helmet());
 app.use(express.json());
 
+// Initialize Prisma client with connection handling
+let prisma;
+try {
+  prisma = new PrismaClient();
+  await prisma.$connect();
+  logger.info('Database connected successfully');
+} catch (error) {
+  logger.warn('Database connection failed:', { error: error.message });
+  prisma = null;
+}
+
 // Health check route
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'ok',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    database: prisma ? 'connected' : 'disconnected'
   });
 });
 
-// User Management Context
+// User Management Context - only enabled if database is connected
 app.get('/api/users/profile', async (req, res, next) => {
+  if (!prisma) {
+    return res.status(503).json({ error: 'Database service unavailable' });
+  }
+  
   try {
     const users = await prisma.user.findMany({
       select: {
@@ -34,6 +49,7 @@ app.get('/api/users/profile', async (req, res, next) => {
     });
     res.json(users);
   } catch (error) {
+    logger.error('Database query failed:', { error: error.message });
     next(error);
   }
 });
@@ -46,10 +62,24 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-// Error handling middleware
-app.use((err, req, res) => {
+// JSON parsing error handler
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    logger.error('JSON parsing error:', { error: err.message });
+    return res.status(400).json({ error: 'Invalid JSON format' });
+  }
+  next(err);
+});
+
+// Generic error handling middleware
+app.use((err, req, res, _next) => {
   logger.error('Server error:', { error: err.message, stack: err.stack });
   res.status(500).json({ error: 'Internal server error' });
+});
+
+// 404 handler - must be after all routes
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not found' });
 });
 
 // Start server
@@ -80,7 +110,9 @@ process.on('unhandledRejection', (reason, promise) => {
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received. Closing HTTP server and database connection...');
   server.close(async () => {
-    await prisma.$disconnect();
+    if (prisma) {
+      await prisma.$disconnect();
+    }
     logger.info('Server closed');
     process.exit(0);
   });
@@ -94,5 +126,7 @@ process.on('exit', (code) => {
       timestamp: new Date().toISOString()
     });
   }
-  prisma.$disconnect();
+  if (prisma) {
+    prisma.$disconnect();
+  }
 }); 
