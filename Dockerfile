@@ -42,7 +42,7 @@ COPY --from=builder /app/package*.json ./
 
 # Install production dependencies only
 ENV NODE_ENV=production
-RUN npm install -g concurrently && npm install --omit=dev
+RUN npm install -g concurrently nodemon && npm install --omit=dev
 RUN cd client && npm install --omit=dev
 RUN cd server && npm install --omit=dev
 
