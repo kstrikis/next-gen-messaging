@@ -100,6 +100,11 @@
 - Backend: localhost:3001
 - Console output captured in tests
 - ELECTRON_ENABLE_LOGGING=1 set in npm scripts
+- Component testing:
+  - Use data-testid for form elements
+  - Avoid redundant ARIA roles
+  - Follow Testing Library best practices
+  - Prefer semantic queries over test IDs when possible
 
 ## Logging Strategy
 

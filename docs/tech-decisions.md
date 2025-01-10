@@ -163,3 +163,65 @@ This document outlines the key technical decisions made for the ChatGenius proje
    - Implement code splitting
    - Add service worker for offline support
    - Optimize asset delivery
+
+## Frontend Patterns
+
+1. Testing:
+
+   - Use `data-testid` for form elements and other test-specific selectors
+   - Avoid redundant ARIA roles (e.g., `role="form"` on `<form>` elements)
+   - Prefer semantic queries (getByRole, getByLabelText) over test IDs when possible
+   - Use Testing Library's user-centric queries
+
+2. Component Structure:
+
+   - Use shadcn/ui components as base building blocks
+   - Extend with compound components for complex features
+   - Follow React.forwardRef pattern for all components
+   - Use displayName for better debugging
+
+3. Styling:
+
+   - Use Tailwind CSS with cn utility for class merging
+   - Follow class-variance-authority (cva) for variant patterns
+   - Maintain consistent className ordering:
+     1. Layout (flex, grid, position)
+     2. Spacing (padding, margin)
+     3. Visual (colors, borders)
+     4. Interactive states (hover, focus)
+
+4. Accessibility:
+
+   - Add ARIA labels to interactive elements
+   - Use semantic HTML elements
+   - Implement proper keyboard navigation
+   - Ensure focus management in modals/overlays
+
+5. State Management:
+
+   - Use React hooks for local state
+   - Implement context for shared state
+   - Plan Redux integration for global state
+   - Follow event delegation patterns
+
+6. Error Handling:
+
+   - Use try/catch blocks
+   - Implement error boundaries
+   - Log errors with context
+   - Show user-friendly error messages
+
+7. Logging:
+
+   - Use emoji prefixes for better readability
+   - Log important state changes
+   - Include relevant context in log messages
+   - Follow severity levels (debug, info, warn, error)
+
+8. Code Organization:
+   - Group related components in feature directories
+   - Separate UI components from business logic
+   - Keep components focused and small
+   - Use index files for clean exports
+
+## Backend Patterns
