@@ -120,11 +120,14 @@ This document outlines the key technical decisions made for the ChatGenius proje
 
    - Use data-testid for form elements
    - Prefer semantic queries (getByRole, getByLabelText)
-   - Avoid redundant ARIA roles
-   - Mock complex dependencies
-   - Test user interactions
-   - Verify log messages
+   - Mock complex dependencies (logger, API)
+   - Test user interactions (focus, blur, submit)
+   - Verify log messages with jest.mock
    - Check component state changes
+   - Test accessibility with ARIA labels
+   - Maintain focus management
+   - Test empty/error states
+   - Verify event handlers
 
 2. **End-to-End Tests (Cypress)**
 
@@ -134,6 +137,10 @@ This document outlines the key technical decisions made for the ChatGenius proje
    - Monitor console logs
    - Test error scenarios
    - Validate UI states
+   - Intercept network requests
+   - Test WebSocket events
+   - Verify state persistence
+   - Check responsive behavior
 
 3. **Visual Testing (Storybook)**
    - Document component variants
@@ -141,6 +148,11 @@ This document outlines the key technical decisions made for the ChatGenius proje
    - Verify accessibility
    - Showcase interactions
    - Test edge cases
+   - Document props API
+   - Show loading states
+   - Test color themes
+   - Validate animations
+   - Check mobile views
 
 ### Backend Testing
 
@@ -152,6 +164,10 @@ This document outlines the key technical decisions made for the ChatGenius proje
    - Check log messages
    - Test edge cases
    - Validate input/output
+   - Test database queries
+   - Verify middleware
+   - Test utility functions
+   - Check error classes
 
 2. **Integration Tests (SuperTest)**
    - Test API endpoints
@@ -160,6 +176,10 @@ This document outlines the key technical decisions made for the ChatGenius proje
    - Test error responses
    - Validate logging
    - Monitor performance
+   - Test WebSocket events
+   - Check rate limiting
+   - Verify file uploads
+   - Test transactions
 
 ### Test Environment & Best Practices
 
@@ -171,6 +191,10 @@ This document outlines the key technical decisions made for the ChatGenius proje
    - Clean state between tests
    - Predictable timestamps
    - Transaction rollbacks
+   - Isolated test runs
+   - CI/CD integration
+   - Test data seeding
+   - Environment variables
 
 2. **Organization**
 
@@ -179,6 +203,11 @@ This document outlines the key technical decisions made for the ChatGenius proje
    - Setup/teardown helpers
    - Shared test utilities
    - Consistent naming patterns
+   - Mock configurations
+   - Test data factories
+   - Shared contexts
+   - Helper functions
+   - Custom matchers
 
 3. **Coverage Requirements**
 
@@ -188,6 +217,10 @@ This document outlines the key technical decisions made for the ChatGenius proje
    - Error scenarios
    - Edge cases
    - Performance benchmarks
+   - WebSocket events
+   - Database queries
+   - File operations
+   - Security checks
 
 4. **Test Data Management**
    - Use factories/fixtures
@@ -195,6 +228,11 @@ This document outlines the key technical decisions made for the ChatGenius proje
    - Clean up after tests
    - Realistic test cases
    - Cover edge cases
+   - Database seeding
+   - Mock API responses
+   - WebSocket events
+   - File uploads
+   - User sessions
 
 ## Logging Strategy
 
@@ -206,6 +244,12 @@ This document outlines the key technical decisions made for the ChatGenius proje
    - Development: Console only
    - Test: Cypress-interceptable
    - Debug logs filtered in dev/test
+   - Automatic error tracking
+   - Session recording
+   - Network monitoring
+   - Redux integration
+   - Performance metrics
+   - Error boundaries
 
 2. **Log Levels**
 
@@ -224,11 +268,24 @@ This document outlines the key technical decisions made for the ChatGenius proje
    - Structured metadata
    - Consistent timestamps
    - JSON in test environment
+   - Stack traces
+   - Component context
+   - User actions
+   - State changes
+   - Performance marks
+   - Error details
 
 4. **Helper Methods**
    - trackFlow: Journey tracking
    - measurePerf: Performance
    - trackState: State changes
+   - logError: Error handling
+   - logWarning: Warnings
+   - logInfo: Information
+   - logDebug: Debug info
+   - logMetric: Metrics
+   - logEvent: Events
+   - logAction: Actions
 
 ### Backend Logging (Winston)
 
@@ -238,6 +295,12 @@ This document outlines the key technical decisions made for the ChatGenius proje
    - error.log: Sync writes
    - combined.log: Info+
    - development.log: Dev only
+   - Crash handling
+   - Process monitoring
+   - Uncaught exceptions
+   - Unhandled rejections
+   - Log rotation
+   - Size limits
 
 2. **Format & Structure**
 
@@ -245,19 +308,38 @@ This document outlines the key technical decisions made for the ChatGenius proje
    - Prod: JSON format
    - Key=value metadata
    - Stack traces
+   - Request context
+   - User context
+   - Performance data
+   - Database queries
+   - API endpoints
+   - WebSocket events
 
 3. **Error Handling**
 
    - Uncaught exceptions
    - Unhandled rejections
-   - Process exit logging
-   - Synchronous crash logs
+   - Process exits
+   - Crash reports
+   - Error boundaries
+   - API errors
+   - Database errors
+   - Network errors
+   - Validation errors
+   - Auth failures
 
-4. **File Management**
-   - 10MB size limit
-   - 5 file rotation
-   - Auto-create directories
-   - Environment paths
+4. **Log Management**
+
+   - Log rotation
+   - Size limits
+   - Retention policy
+   - Archival strategy
+   - Search capability
+   - Alert triggers
+   - Dashboard views
+   - Export options
+   - Access control
+   - Compliance
 
 ## Code Quality
 
