@@ -146,31 +146,60 @@
 
 ### Task 6: Frontend Setup with React.js, Next.js, and Tailwind CSS
 
-**User Story**: _As a developer, I want a frontend framework set up with necessary tools so that I can build a responsive and interactive user interface._
+**User Story**: _As a user, I want a modern, responsive interface similar to Slack so that I can efficiently communicate with my team._
 
 - [ ] **Initialize Next.js App**
 
-  - Set up a Next.js app in `/client`.
-  - Configure initial pages and components directory.
+  - Set up a Next.js app in `/client`
+  - Configure initial pages and components directory
+  - Set up Tailwind CSS and shadcn/ui
 
-- [ ] **Set Up Tailwind CSS**
+- [ ] **Implement Core Layout Components**
 
-  - Install and configure Tailwind CSS for styling.
-  - Set up `tailwind.config.js` as needed.
+  - Create base layout with CSS Grid
+  - Implement responsive sidebar behavior
+  - Set up navigation structure
 
-- [ ] **Configure State Management**
+- [ ] **Build Left Sidebar Components**
 
-  - Set up Redux Toolkit for state management.
-  - Implement Redux Persist for state persistence across sessions.
+  - Workspace switcher component
+  - Navigation menu with icons
+  - Collapsible channels list
+  - Direct messages list
+  - Apps section
 
-- [ ] **Implement Code Quality Tools**
+- [ ] **Implement Top Bar**
 
-  - Configure ESLint and Prettier for the frontend codebase.
-  - Ensure code adheres to the set standards.
+  - Search bar component
+  - Navigation controls
+  - Help button
+  - User settings menu
 
-- [ ] **Verify Frontend Setup**
-  - Run the Next.js app to verify it's rendering correctly.
-  - Fix any initial rendering or configuration issues.
+- [ ] **Create Message Thread Components**
+
+  - Message list container
+  - Individual message component
+  - Rich text message composer
+  - Attachment handling UI
+  - Emoji picker integration
+
+- [ ] **Add State Management**
+
+  - Set up Redux Toolkit for UI state
+  - Implement placeholder data for development
+  - Plan API integration points
+
+- [ ] **Style and Polish**
+
+  - Apply consistent Tailwind styling
+  - Implement dark/light mode
+  - Add loading states and animations
+  - Ensure responsive behavior
+
+- [ ] **Write Component Tests**
+  - Unit tests for all components
+  - Integration tests for component interaction
+  - Storybook documentation
 
 ---
 

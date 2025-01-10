@@ -115,3 +115,44 @@ Local Testing:
   - Use `ps -f -p PID` to identify process details
   - Ensure proper signal handling in test setup
   - Monitor process cleanup in test logs
+
+## Frontend UI Implementation
+
+Layout Components:
+
+- Main layout uses CSS Grid for 3-column design
+- Left sidebar: 260px fixed width
+- Main content: flexible width
+- Right sidebar (optional): 340px fixed width
+
+Key Components to Implement:
+
+- LeftSidebar
+  - WorkspaceSwitcher
+  - NavigationMenu
+  - ChannelsList (collapsible)
+  - DirectMessagesList
+  - AppsSection
+- TopBar
+  - SearchBar
+  - NavigationControls
+  - HelpButton
+- MainContent
+  - ChannelHeader
+  - MessageThread
+  - MessageComposer
+    - RichTextControls
+    - AttachmentOptions
+    - EmojiPicker
+
+UI Framework:
+
+- Using shadcn/ui components
+- Tailwind for custom styling
+- Responsive breakpoints planned
+
+Current Focus:
+
+- Implementing static UI components
+- Using placeholder data for development
+- Focusing on component structure before API integration
