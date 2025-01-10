@@ -10,8 +10,8 @@
   "scripts": {
     "prepare": "husky",
     "dev:client": "cd client && npm run dev",
-    "dev:server": "cd server && npm run dev",
-    "dev": "concurrently \"cd client && npm run dev\" \"cd server && npm run dev\"",
+    "dev:server": "cd server && NODE_OPTIONS='--no-deprecation --disable-warning=ExperimentalWarning' npm run dev",
+    "dev": "concurrently \"cd client && npm run dev\" \"cd server && NODE_OPTIONS='--no-deprecation --disable-warning=ExperimentalWarning' npm run dev\"",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{js,jsx,json,md}\"",
@@ -19,14 +19,14 @@
     "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
     "test:unit": "npm run test:client && npm run test:server",
     "test:integration": "cd server && npm run test:integration",
-    "test:e2e": "cypress run",
-    "test:e2e:open": "cypress open",
+    "test:e2e": "npm run dev & NODE_OPTIONS='--no-deprecation --disable-warning=ExperimentalWarning' cypress run",
+    "test:e2e:open": "npm run dev & NODE_OPTIONS='--no-deprecation --disable-warning=ExperimentalWarning' cypress open",
     "test:client": "cd client && npm test",
     "test:server": "cd server && npm test",
     "test:watch": "npm run test:unit -- --watch",
     "test:coverage": "npm run test:unit -- --coverage",
     "test:ci": "npm run test:all -- --ci --coverage",
-    "test:local-ci": "trap 'docker ps -q | xargs -r docker stop; docker ps -aq | xargs -r docker rm' EXIT; act -j test --container-architecture linux/amd64 --reuse --rm",
+    "test:local-ci": "trap 'docker ps -q | xargs -r docker stop; docker ps -aq | xargs -r docker rm' EXIT; act -j test --container-architecture linux/amd64",
     "storybook": "cd client && npm run storybook",
     "build-storybook": "cd client && npm run build-storybook",
     "validate": "npm run lint && npm run test:unit",
@@ -73,7 +73,8 @@
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
     "prettier": "^3.4.2",
-    "tcp-port-used": "^1.0.2"
+    "tcp-port-used": "^1.0.2",
+    "wait-on": "^8.0.2"
   },
   "dependencies": {
     "glob": "^11.0.0",

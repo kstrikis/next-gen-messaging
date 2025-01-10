@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "dev": "nodemon src/index.js",
+    "dev": "NODE_OPTIONS='--no-deprecation' nodemon src/index.js",
     "start": "node src/index.js",
     "test": "jest",
     "test:watch": "jest --watch",

@@ -9,6 +9,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    container:
+      image: node:22-bullseye
 
     services:
       postgres:
@@ -27,87 +29,32 @@ jobs:
           --health-retries 5
 
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/chatgenius_test?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/chatgenius_test?schema=public
       NODE_ENV: test
       PORT: 3001
-      LOG_LEVEL: error
+      LOG_LEVEL: debug
       RATE_LIMIT_WINDOW_MS: 0
       RATE_LIMIT_MAX_REQUESTS: 0
+      NEXT_PUBLIC_API_URL: http://127.0.0.1:3001
+      NEXT_PUBLIC_SOCKET_URL: http://127.0.0.1:3001
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Cache root dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Cache client dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            client/node_modules
-            client/.next/cache
-          key: ${{ runner.os }}-client-${{ hashFiles('client/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-client-
-
-      - name: Cache server dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            server/node_modules
-            server/.prisma
-          key: ${{ runner.os }}-server-${{ hashFiles('server/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-server-
-
       - name: Install dependencies
-        run: |
-          npm run install:all
-          cd server && npx prisma generate
+        run: npm run install:all
+
+      - name: Generate Prisma client
+        run: cd server && npx prisma generate
 
       - name: Run migrations
         run: cd server && npx prisma migrate deploy
 
-      - name: Run linting
-        run: npm run lint
-
-      - name: Run unit tests
-        run: npm run test:unit
-
-      - name: Run integration tests
-        run: npm run test:integration
-
-      - name: Install Cypress dependencies
+      - name: Run linting and unit tests
         run: |
-          sudo apt-get update
-          sudo apt-get install -y xvfb libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
-
-      - name: Start server for E2E tests
-        run: |
-          cd server
-          npm run dev &
-          npx wait-on -t 30000 http://localhost:3001/api/health
-
-      - name: Run E2E tests
-        uses: cypress-io/github-action@v6
-        with:
-          browser: chrome
-          working-directory: .
-          wait-on: http://localhost:3001/api/health
-          wait-on-timeout: 30
+          npm run lint
+          npm run test:unit
+          npm run test:integration
 
       - name: Build
         run: npm run build

@@ -1,6 +1,5 @@
 import winston from 'winston';
 import path from 'path';
-import stackTrace from 'stack-trace';
 import fs from 'fs';
 
 // Helper to determine if we're in the server directory
@@ -47,53 +46,27 @@ const colors = {
 // Add colors to winston
 winston.addColors(colors);
 
-// Custom format to handle Node.js warnings
-const handleNodeWarnings = winston.format((info) => {
-  if (info.message && typeof info.message === 'string') {
-    // Check for Node.js warning patterns in both message and data fields
-    const messageToCheck = typeof info.data === 'string' ? info.data : info.message;
-    if (messageToCheck.includes('ExperimentalWarning') || 
-        messageToCheck.includes('DeprecationWarning')) {
-      // If the warning is in the data field, move it to message
-      if (info.data) {
-        info.message = info.data;
-        delete info.data;
-      }
-      return { 
-        ...info,
-        level: 'warn',
-        [Symbol.for('level')]: 'warn'  // This is needed for Winston's internal level handling
-      };
-    }
-  }
-  return info;
-});
-
 // Development-focused format with reliable file/line tracking
 const devFormat = winston.format.combine(
   winston.format.timestamp({ format: 'HH:mm:ss.SSS' }),
-  handleNodeWarnings(),
   winston.format.colorize({ all: false }),
   winston.format.printf(({ level, message, timestamp, ...metadata }) => {
-    let msg = `${timestamp} [${level}]: ${message}`;
+    let msg = `${timestamp} [${level}]`;
     
-    // Add file and line number in development using stack-trace
-    if (config.isDevelopment) {
-      const trace = stackTrace.get();
-      // Skip internal winston frames and get to the actual caller
-      const caller = trace.find(t => !t.getFileName()?.includes('node_modules/winston'));
-      if (caller) {
-        const file = path.basename(caller.getFileName() || 'unknown');
-        const line = caller.getLineNumber();
-        msg = `${timestamp} [${level}] ${file}:${line}: ${message}`;
-      }
+    // Handle string messages and metadata
+    if (typeof message === 'object') {
+      msg += ' ' + JSON.stringify(message);
+    } else {
+      msg += ' ' + message;
     }
-
-    // Properly handle metadata
-    if (metadata && Object.keys(metadata).length > 0) {
+    
+    // Add any remaining metadata as key=value pairs
+    if (metadata && Object.keys(metadata).length > 0 && !metadata.data) {
       const cleanMetadata = { ...metadata };
-      delete cleanMetadata.splat; // Remove winston internal property
-      msg += '\n' + JSON.stringify(cleanMetadata, null, 2);
+      delete cleanMetadata.splat;
+      msg += ' ' + Object.entries(cleanMetadata)
+        .map(([key, value]) => `${key}=${value}`)
+        .join(' ');
     }
     
     return msg;
@@ -102,7 +75,6 @@ const devFormat = winston.format.combine(
 
 // Production format (JSON-based for better parsing)
 const prodFormat = winston.format.combine(
-  handleNodeWarnings(),
   winston.format.timestamp(),
   winston.format.json(),
 );
