@@ -76,7 +76,7 @@ describe('MessageComposer', () => {
     const text = 'test message';
     
     fireEvent.change(textarea, { target: { value: text } });
-    fireEvent.submit(screen.getByRole('form'));
+    fireEvent.submit(screen.getByTestId('message-form'));
     
     expect(logger.info).toHaveBeenCalledWith('💬 Message submitted from composer:', {
       message: text,
@@ -88,7 +88,7 @@ describe('MessageComposer', () => {
 
   it('logs warning for empty message submission', () => {
     render(<MessageComposer onSend={mockOnSend} />);
-    fireEvent.submit(screen.getByRole('form'));
+    fireEvent.submit(screen.getByTestId('message-form'));
     
     expect(logger.warn).toHaveBeenCalledWith('⚠️ Attempted to submit empty message');
     expect(mockOnSend).not.toHaveBeenCalled();

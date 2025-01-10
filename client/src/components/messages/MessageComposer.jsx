@@ -93,7 +93,7 @@ export default function MessageComposer({ onSend, placeholder = 'Message' }) {
 
   return (
     <div ref={composerRef} className="flex flex-col">
-      <form className="flex flex-col" onSubmit={handleSubmit}>
+      <form className="flex flex-col" onSubmit={handleSubmit} data-testid="message-form">
         {/* Formatting Toolbar */}
         {isFocused && (
           <div className="flex items-center gap-1 border-b border-border px-4 py-2">

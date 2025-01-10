@@ -20,7 +20,7 @@ describe('MessagesContainer', () => {
     const text = 'test message';
     
     fireEvent.change(textarea, { target: { value: text } });
-    fireEvent.submit(screen.getByRole('form'));
+    fireEvent.submit(screen.getByTestId('message-form'));
     
     // Check composer logs
     expect(logger.info).toHaveBeenCalledWith('💬 Message submitted from composer:', {
