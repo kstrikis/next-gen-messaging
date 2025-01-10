@@ -11,6 +11,9 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/chatgenius?schema=public
       - PORT=3001
       - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost}
+    ports:
+      - "3000:3000"
+      - "3001:3001"
     depends_on:
       db:
         condition: service_healthy
@@ -34,19 +37,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
-
-  nginx:
-    image: nginx:alpine
-    container_name: chatgenius-nginx
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - app
-    networks:
-      - app-network
     restart: unless-stopped
 
 networks:

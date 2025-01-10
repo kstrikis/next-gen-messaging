@@ -65,7 +65,7 @@ INSTANCE_ID="i-00b9543a918aee8bb"
 
 # Send setup script to instance
 echo "Sending setup script to instance..."
-SETUP_SCRIPT=$(cat setup-instance.sh)
+SETUP_SCRIPT=$(cat "$(dirname "$0")/setup-instance.sh")
 aws ec2 modify-instance-attribute \
     --instance-id $INSTANCE_ID \
     --attribute userData \

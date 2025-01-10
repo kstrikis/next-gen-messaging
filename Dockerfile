@@ -1,4 +1,4 @@
-FROM node:20-bullseye AS builder
+FROM node:22-bullseye AS builder
 
 WORKDIR /app
 
@@ -22,13 +22,14 @@ RUN cd server && npx prisma generate
 RUN cd client && npm run build
 
 # Production stage
-FROM node:20-bullseye-slim
+FROM node:22-bullseye-slim
 
 WORKDIR /app
 
 # Install netcat for container health check
 RUN apt-get update && apt-get install -y \
     netcat-openbsd \
+    bash \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy built client and server
@@ -41,7 +42,7 @@ COPY --from=builder /app/package*.json ./
 
 # Install production dependencies only
 ENV NODE_ENV=production
-RUN npm install --omit=dev
+RUN npm install --save concurrently && npm install --omit=dev
 RUN cd client && npm install --omit=dev
 RUN cd server && npm install --omit=dev
 

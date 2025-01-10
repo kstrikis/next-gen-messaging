@@ -1,5 +1,8 @@
 {
   "name": "chatgenius2",
+  "engines": {
+    "node": "22.x"
+  },
   "version": "1.0.0",
   "description": "A modern messaging platform with AI-powered features, built using Domain-Driven Design principles. ChatGenius combines Slack-like functionality with advanced AI capabilities for enhanced workplace communication.",
   "main": "index.js",
