@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import LeftSidebar from './LeftSidebar';
+import TopBar from './TopBar';
 
 export default function MainLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -20,17 +21,11 @@ export default function MainLayout({ children }) {
         {/* Main Content Area */}
         <main className="flex h-full flex-col">
           {/* Top Bar */}
-          <header className="flex h-12 items-center border-b border-border bg-header px-4">
-            {/* Show toggle button in header when sidebar is closed */}
-            {!isSidebarOpen && (
-              <button 
-                onClick={toggleSidebar}
-                className="mr-4 text-sm text-muted-foreground hover:text-foreground"
-              >
-                Open Sidebar
-              </button>
-            )}
-            {/* TopBar component will go here */}
+          <header className="h-12 border-b border-border bg-header">
+            <TopBar 
+              showSidebarButton={!isSidebarOpen}
+              onSidebarToggle={toggleSidebar}
+            />
           </header>
 
           {/* Message Area */}

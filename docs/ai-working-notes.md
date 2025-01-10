@@ -121,38 +121,62 @@ Local Testing:
 Layout Components:
 
 - Main layout uses CSS Grid for 3-column design
-- Left sidebar: 260px fixed width
+- Left sidebar: 260px fixed width, collapsible
 - Main content: flexible width
 - Right sidebar (optional): 340px fixed width
+- Smooth transitions for sidebar toggle
+- Responsive grid adjustments on sidebar collapse
 
-Key Components to Implement:
+Implemented Components:
 
 - LeftSidebar
-  - WorkspaceSwitcher
-  - NavigationMenu
-  - ChannelsList (collapsible)
-  - DirectMessagesList
-  - AppsSection
-- TopBar
-  - SearchBar
-  - NavigationControls
-  - HelpButton
-- MainContent
-  - ChannelHeader
-  - MessageThread
-  - MessageComposer
-    - RichTextControls
-    - AttachmentOptions
-    - EmojiPicker
+  - WorkspaceSwitcher (workspace name + dropdown)
+  - NavigationMenu (Home, DMs, Activity)
+  - ChannelsList (collapsible, unread states)
+  - DirectMessagesList (collapsible, user statuses)
+  - Add Channel button
+- Features:
+  - Collapsible sections with chevron indicators
+  - Unread message indicators
+  - User status indicators (online, offline, away)
+  - Active state highlighting
+  - Hover effects and transitions
+  - Accessible button and link elements
 
 UI Framework:
 
 - Using shadcn/ui components
 - Tailwind for custom styling
-- Responsive breakpoints planned
+- lucide-react for icons
+- CSS Grid and Flexbox for layouts
+- CSS variables for theming
 
 Current Focus:
 
 - Implementing static UI components
 - Using placeholder data for development
 - Focusing on component structure before API integration
+
+Next Steps:
+
+- Implement TopBar components
+  - Search functionality
+  - Navigation controls
+  - Help button
+- Message thread components
+  - Message list
+  - Rich text composer
+  - Attachments
+- Right sidebar components
+  - Thread details
+  - User profiles
+  - Activity feed
+
+State Management:
+
+- Using React hooks for local state
+- Planning Redux integration for:
+  - User session
+  - Channel/DM lists
+  - Message threads
+  - Online status
