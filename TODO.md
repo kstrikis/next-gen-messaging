@@ -1010,6 +1010,64 @@
 
 ---
 
+## Current Frontend Issues
+
+### Task 1: Fix Left Sidebar Behavior
+
+**User Story**: _As a user, I want consistent and intuitive sidebar behavior so that I can navigate the application efficiently._
+
+- [ ] **Fix New Channel Button Issue**
+
+  - Prevent sidebar from closing when clicking the new channel button
+  - Implement proper event handling for sidebar state
+  - Add proper transition animations
+
+- [ ] **Fix "Open Sidebar" Text**
+  - Implement proper functionality for the open sidebar text
+  - Add smooth transition animations
+  - Ensure consistent behavior across different states
+
+### Task 2: Implement Right Sidebar Functionality
+
+**User Story**: _As a user, I want a functional right sidebar that enhances my messaging experience._
+
+- [ ] **Define Right Sidebar Purpose**
+
+  - Determine primary use cases (thread details, user profiles, etc.)
+  - Design component structure
+  - Plan state management integration
+
+- [ ] **Implement Core Features**
+  - Thread details and replies view
+  - User profile information
+  - Activity feed integration
+  - Proper show/hide behavior
+
+### Task 3: Fix Message Interaction Issues
+
+**User Story**: _As a user, I want reliable message interactions so that I can engage with content effectively._
+
+- [ ] **Fix Emoji Reactions**
+
+  - Implement proper event handlers for emoji clicks
+  - Add visual feedback for emoji selection
+  - Ensure state updates correctly
+
+- [ ] **Implement Status Messages**
+  - Add proper state management for status updates
+  - Implement real-time status changes
+  - Add visual indicators for different states
+
+### Task 4: Notification System
+
+**User Story**: _As a user, I want accurate notification indicators so that I can stay updated on new messages._
+
+- [ ] **Implement Message Notification Circles**
+  - Add proper state management for unread messages
+  - Implement real-time updates for notification state
+  - Add visual indicators for different notification types
+  - Ensure proper clearing of notifications
+
 ## Ongoing Tasks
 
 ### Task 26: Code Reviews
