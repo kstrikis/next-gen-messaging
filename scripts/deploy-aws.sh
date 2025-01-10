@@ -40,7 +40,7 @@ IGW_ID=$(aws ec2 describe-internet-gateways \
 echo "Creating subnet..."
 SUBNET_ID=$(aws ec2 create-subnet \
     --vpc-id $VPC_ID \
-    --cidr-block 10.1.100.0/24 \
+    --cidr-block 10.1.96.0/20 \
     --availability-zone us-east-1a \
     --tag-specifications "ResourceType=subnet,Tags=[{Key=Name,Value=kstrikis-week1-chatgenius-subnet}]" \
     --query 'Subnet.SubnetId' \
