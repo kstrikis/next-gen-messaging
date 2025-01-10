@@ -11,61 +11,38 @@ exec 1> >(tee -a "$LOG_FILE") 2>&1
 echo "Starting deployment at $(date)"
 echo "Logging to $LOG_FILE"
 
-# Load environment variables
-if [ ! -f .env ]; then
-    echo "Error: .env file not found"
-    echo "Please create a .env file with AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY"
-    exit 1
-fi
-
-source .env
-
-# Check required environment variables
-required_vars=("AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY")
-for var in "${required_vars[@]}"; do
-    if [ -z "${!var}" ]; then
-        echo "Error: $var is not set in .env file"
-        exit 1
-    fi
-done
-
 # Set AWS region
 export AWS_DEFAULT_REGION="us-east-1"
 
 echo "🚀 Starting deployment process..."
 
-# Create VPC
-echo "Creating VPC..."
-VPC_ID=$(aws ec2 create-vpc \
-    --cidr-block 10.13.37.0/24 \
-    --tag-specifications "ResourceType=vpc,Tags=[{Key=Name,Value=kstrikis-week1-chatgenius}]" \
-    --query 'Vpc.VpcId' \
+# Get existing VPC
+echo "Getting shared VPC..."
+VPC_ID=$(aws ec2 describe-vpcs \
+    --vpc-ids vpc-025ad8b8b2d701979 \
+    --query 'Vpcs[0].VpcId' \
     --output text)
 
-# Enable DNS hostnames for the VPC
-aws ec2 modify-vpc-attribute \
-    --vpc-id $VPC_ID \
-    --enable-dns-hostnames "{\"Value\":true}"
+if [ -z "$VPC_ID" ]; then
+    echo "❌ Could not find VPC"
+    exit 1
+fi
 
-# Create Internet Gateway
-echo "Creating Internet Gateway..."
-IGW_ID=$(aws ec2 create-internet-gateway \
-    --tag-specifications "ResourceType=internet-gateway,Tags=[{Key=Name,Value=kstrikis-week1-chatgenius-igw}]" \
-    --query 'InternetGateway.InternetGatewayId' \
+echo "Found VPC: $VPC_ID"
+
+# Get Internet Gateway ID
+IGW_ID=$(aws ec2 describe-internet-gateways \
+    --filters "Name=attachment.vpc-id,Values=$VPC_ID" \
+    --query 'InternetGateways[0].InternetGatewayId' \
     --output text)
 
-# Attach Internet Gateway to VPC
-aws ec2 attach-internet-gateway \
-    --vpc-id $VPC_ID \
-    --internet-gateway-id $IGW_ID
-
-# Create public subnet
-echo "Creating public subnet..."
+# Create our own subnet
+echo "Creating subnet..."
 SUBNET_ID=$(aws ec2 create-subnet \
     --vpc-id $VPC_ID \
-    --cidr-block 10.13.37.0/25 \
+    --cidr-block 10.1.100.0/24 \
     --availability-zone us-east-1a \
-    --tag-specifications "ResourceType=subnet,Tags=[{Key=Name,Value=kstrikis-week1-chatgenius-public}]" \
+    --tag-specifications "ResourceType=subnet,Tags=[{Key=Name,Value=kstrikis-week1-chatgenius-subnet}]" \
     --query 'Subnet.SubnetId' \
     --output text)
 
@@ -74,21 +51,13 @@ aws ec2 modify-subnet-attribute \
     --subnet-id $SUBNET_ID \
     --map-public-ip-on-launch
 
-# Create route table
-echo "Creating route table..."
-ROUTE_TABLE_ID=$(aws ec2 create-route-table \
-    --vpc-id $VPC_ID \
-    --tag-specifications "ResourceType=route-table,Tags=[{Key=Name,Value=kstrikis-week1-chatgenius-rt}]" \
-    --query 'RouteTable.RouteTableId' \
+# Get main route table ID
+ROUTE_TABLE_ID=$(aws ec2 describe-route-tables \
+    --filters "Name=vpc-id,Values=$VPC_ID" "Name=association.main,Values=true" \
+    --query 'RouteTables[0].RouteTableId' \
     --output text)
 
-# Create route to Internet Gateway
-aws ec2 create-route \
-    --route-table-id $ROUTE_TABLE_ID \
-    --destination-cidr-block 0.0.0.0/0 \
-    --gateway-id $IGW_ID
-
-# Associate route table with subnet
+# Associate route table with our subnet
 aws ec2 associate-route-table \
     --route-table-id $ROUTE_TABLE_ID \
     --subnet-id $SUBNET_ID
