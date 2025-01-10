@@ -20,7 +20,7 @@ try {
   await prisma.$connect();
   logger.info('Database connected successfully');
 } catch (error) {
-  logger.warn('Database connection failed:', { error: error.message });
+  logger.error('Database connection failed:', { error: error.message, stack: error.stack });
   prisma = null;
 }
 
@@ -29,7 +29,8 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'ok',
     timestamp: new Date().toISOString(),
-    database: prisma ? 'connected' : 'disconnected'
+    database: prisma ? 'connected' : 'disconnected',
+    uptime: process.uptime()
   });
 });
 
@@ -49,7 +50,7 @@ app.get('/api/users/profile', async (req, res, next) => {
     });
     res.json(users);
   } catch (error) {
-    logger.error('Database query failed:', { error: error.message });
+    logger.error('Database query failed:', { error: error.message, stack: error.stack });
     next(error);
   }
 });
@@ -65,7 +66,7 @@ if (process.env.NODE_ENV !== 'production') {
 // JSON parsing error handler
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    logger.error('JSON parsing error:', { error: err.message });
+    logger.error('JSON parsing error:', { error: err.message, stack: err.stack });
     return res.status(400).json({ error: 'Invalid JSON format' });
   }
   next(err);
@@ -73,14 +74,22 @@ app.use((err, req, res, next) => {
 
 // Generic error handling middleware
 app.use((err, req, res, _next) => {
-  logger.error('Server error:', { error: err.message, stack: err.stack });
+  logger.error('Server error:', { 
+    error: err.message, 
+    stack: err.stack,
+    path: req.path,
+    method: req.method
+  });
   res.status(500).json({ error: 'Internal server error' });
 });
 
 // 404 handler - must be after all routes
 app.use((req, res) => {
+  logger.warn('Route not found:', { path: req.path, method: req.method });
   res.status(404).json({ error: 'Not found' });
 });
+
+let isShuttingDown = false;
 
 // Start server
 const server = app.listen(port, () => {
@@ -88,14 +97,23 @@ const server = app.listen(port, () => {
 });
 
 // Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-  logger.error('Uncaught Exception:', { 
-    error: error.message,
-    stack: error.stack,
-    type: error.name
-  });
-  // Give logger time to write
-  setTimeout(() => process.exit(1), 1000);
+process.on('uncaughtException', async (error) => {
+  try {
+    logger.error('Uncaught Exception:', { 
+      error: error.message,
+      stack: error.stack,
+      type: error.name
+    });
+
+    if (!isShuttingDown) {
+      isShuttingDown = true;
+      // Attempt graceful shutdown
+      await gracefulShutdown('uncaught exception');
+    }
+  } catch (shutdownError) {
+    logger.error('Error during shutdown:', { error: shutdownError.message });
+    process.exit(1);
+  }
 });
 
 // Handle unhandled promise rejections
@@ -106,15 +124,47 @@ process.on('unhandledRejection', (reason, promise) => {
   });
 });
 
-// Handle graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received. Closing HTTP server and database connection...');
-  server.close(async () => {
+// Graceful shutdown helper
+async function gracefulShutdown(signal) {
+  logger.info('Initiating graceful shutdown...', { signal });
+  
+  try {
+    // Close server first (stop accepting new connections)
+    await new Promise((resolve, reject) => {
+      server.close((err) => {
+        if (err) {
+          logger.error('Error closing server:', { error: err.message });
+          reject(err);
+        } else {
+          logger.info('Server closed successfully');
+          resolve();
+        }
+      });
+    });
+
+    // Disconnect database
     if (prisma) {
       await prisma.$disconnect();
+      logger.info('Database disconnected successfully');
     }
-    logger.info('Server closed');
+
+    // Exit process
+    logger.info('Graceful shutdown completed');
     process.exit(0);
+  } catch (error) {
+    logger.error('Error during graceful shutdown:', { error: error.message });
+    process.exit(1);
+  }
+}
+
+// Handle graceful shutdown signals
+const signals = ['SIGTERM', 'SIGINT', 'SIGUSR2']; // SIGUSR2 is used by nodemon
+signals.forEach(signal => {
+  process.on(signal, async () => {
+    if (!isShuttingDown) {
+      isShuttingDown = true;
+      await gracefulShutdown(signal);
+    }
   });
 });
 
@@ -126,7 +176,6 @@ process.on('exit', (code) => {
       timestamp: new Date().toISOString()
     });
   }
-  if (prisma) {
-    prisma.$disconnect();
-  }
+  // Note: This is a synchronous event, async operations won't work here
+  logger.info('Process exiting', { code });
 }); 

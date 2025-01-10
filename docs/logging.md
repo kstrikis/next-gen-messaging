@@ -2,7 +2,73 @@
 
 ## Overview
 
-Our logging system is built on Winston with custom enhancements for development and debugging. It provides structured logging with different priority levels and specialized helpers for common development tasks.
+Our logging system uses two main components:
+
+- Backend: Winston with custom enhancements for development and debugging
+- Frontend: LogRocket for client-side logging and session replay
+
+## Frontend Logging (LogRocket)
+
+```javascript
+import logger from '@/lib/logger';
+
+// Basic logging
+logger.debug('Debug information');
+logger.info('Important information');
+logger.warn('Warning condition');
+logger.error('Error occurred');
+
+// Track user actions
+logger.track('button_click', { buttonId: 'send-message' });
+```
+
+LogRocket provides:
+
+- Session replay for debugging user issues
+- Performance monitoring
+- Error tracking with stack traces
+- Network request monitoring
+- Console logs capture
+- Redux state tracking
+
+### Configuration
+
+LogRocket is initialized with:
+
+```javascript
+LogRocket.init('chatgenius/prod');
+```
+
+### Best Practices
+
+1. Use appropriate log levels:
+
+   - `debug`: For development information
+   - `info`: For important operations
+   - `warn`: For concerning but non-critical issues
+   - `error`: For critical issues
+   - `track`: For user actions and events
+
+2. Include context in logs:
+
+   ```javascript
+   logger.debug('Message send attempt:', {
+     message,
+     channelId,
+     timestamp: new Date(),
+   });
+   ```
+
+3. Track important user actions:
+   ```javascript
+   logger.track('message_sent', {
+     channelId,
+     messageLength: message.length,
+     hasAttachments: attachments.length > 0,
+   });
+   ```
+
+## Backend Logging (Winston)
 
 ## Log Levels
 
