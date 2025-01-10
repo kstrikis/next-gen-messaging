@@ -25,6 +25,7 @@ const createLogger = (level) => (...args) => {
     const processedArgs = args.map(arg => 
       typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
     );
+    // eslint-disable-next-line no-console
     console.log(`[${level}]`, ...processedArgs);
     return;
   }
@@ -33,11 +34,13 @@ const createLogger = (level) => (...args) => {
   if (isDev) {
     // Skip debug logs in development
     if (level === 'debug') return;
+    // eslint-disable-next-line no-console
     console.log(`[${level}]`, ...args);
     return;
   }
 
   // Production: both console and LogRocket
+  // eslint-disable-next-line no-console
   console.log(`[${level}]`, ...args);
   LogRocket.track(level, { message: args.join(' ') });
 };
