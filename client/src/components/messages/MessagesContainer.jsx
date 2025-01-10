@@ -2,11 +2,12 @@
 
 import MessageList from './MessageList';
 import MessageComposer from './MessageComposer';
+import logger from '@/lib/logger';
 
 export default function MessagesContainer() {
   const handleSendMessage = (message) => {
     // This will be replaced with actual API call
-    console.log('Sending message:', message);
+    logger.debug('Message send attempt:', message);
   };
 
   return (

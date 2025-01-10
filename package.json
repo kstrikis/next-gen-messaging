@@ -78,6 +78,7 @@
   },
   "dependencies": {
     "glob": "^11.0.0",
+    "logrocket": "^9.0.1",
     "rimraf": "^6.0.1",
     "stack-trace": "^1.0.0-pre2",
     "winston": "^3.17.0"

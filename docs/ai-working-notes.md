@@ -139,6 +139,10 @@ Implemented Components:
   - SearchBar (with keyboard shortcut indicator)
   - ChannelHeader (name, topic, member count)
   - ActionsMenu (help, settings, huddle)
+- Messages
+  - MessageList (grouped by date)
+  - Message (user info, reactions, actions)
+  - MessageComposer (rich text, attachments)
 - Features:
   - Collapsible sections with chevron indicators
   - Unread message indicators
@@ -148,6 +152,10 @@ Implemented Components:
   - Accessible button and link elements
   - Responsive design with breakpoints
   - Focus states and keyboard navigation
+  - Auto-resizing message input
+  - Message reactions and emoji support
+  - Hover actions for messages
+  - Date separators in message list
 
 UI Framework:
 
@@ -165,10 +173,6 @@ Current Focus:
 
 Next Steps:
 
-- Message thread components
-  - Message list with avatars and timestamps
-  - Rich text composer with formatting
-  - File attachments and emoji picker
 - Right sidebar components
   - Thread details and replies
   - User profiles and presence
@@ -177,6 +181,10 @@ Next Steps:
   - Search modal with keyboard shortcuts
   - Results filtering and highlighting
   - Recent searches
+- Add rich text editing
+  - Markdown support
+  - File uploads
+  - Emoji picker
 
 State Management:
 
@@ -187,3 +195,38 @@ State Management:
   - Message threads
   - Online status
   - Search history
+  - Message drafts
+  - Reactions and emoji data
+
+## Logging Strategy
+
+Frontend Logging:
+
+- Using LogRocket for frontend logging and session replay
+- Simple logger interface in `client/src/lib/logger.js`
+- Methods: debug, info, warn, error, track
+- Initialized with app ID 'chatgenius/prod'
+- Used for:
+  - Debug information
+  - User actions tracking
+  - Error reporting
+  - Performance monitoring
+  - Session replay
+
+Backend Logging:
+
+- Using Winston for server-side logging
+- Separate log files for different levels
+- Structured logging with timestamps
+- Used for:
+  - API requests/responses
+  - Database operations
+  - Server events
+  - Error tracking
+
+ESLint Configuration:
+
+- Enforces Winston usage on backend
+- Enforces LogRocket usage on frontend
+- Prevents console.\* usage
+- Separate rules for client/ and server/ directories

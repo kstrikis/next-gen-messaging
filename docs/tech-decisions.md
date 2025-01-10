@@ -5,17 +5,20 @@ This document outlines the key technical decisions made for the ChatGenius proje
 ## Frontend
 
 ### React 18 vs 19
+
 - Currently using React 18.2.0 instead of React 19
 - Main reason: Auth0 React SDK compatibility (only supports up to React 18)
 - Will upgrade once Auth0 adds React 19 support
 
 ### Next.js 15
+
 - Using the latest version (15.1.4)
 - Provides improved performance and features
 - Compatible with React 18
 - Includes built-in optimizations for static and server-side rendering
 
 ### UI Components
+
 - **Tailwind CSS**: Chosen for utility-first approach and excellent developer experience
 - **shadcn/ui**: Selected for:
   - High-quality, accessible components
@@ -24,6 +27,7 @@ This document outlines the key technical decisions made for the ChatGenius proje
   - No vendor lock-in (components are copied into the project)
 
 ### State Management
+
 - **Redux Toolkit**: Chosen for:
   - Simplified Redux setup
   - Built-in immutability with Immer
@@ -35,6 +39,7 @@ This document outlines the key technical decisions made for the ChatGenius proje
 ## Backend
 
 ### Node.js & Express
+
 - Using Node.js for JavaScript/ECMAScript consistency across the stack
 - Express.js for its:
   - Minimal, unopinionated framework
@@ -43,6 +48,7 @@ This document outlines the key technical decisions made for the ChatGenius proje
   - Excellent performance
 
 ### Database
+
 - **PostgreSQL**: Selected for:
   - ACID compliance
   - Rich feature set
@@ -55,6 +61,7 @@ This document outlines the key technical decisions made for the ChatGenius proje
   - Built-in connection pooling
 
 ### Real-time Communication
+
 - **Socket.IO**: Selected for:
   - WebSocket support with fallbacks
   - Room/namespace support
@@ -64,6 +71,7 @@ This document outlines the key technical decisions made for the ChatGenius proje
 ## Testing
 
 ### Multiple Testing Layers
+
 - **Jest**: Unit testing
 - **React Testing Library**: Component testing
 - **SuperTest**: API testing
@@ -73,11 +81,13 @@ This document outlines the key technical decisions made for the ChatGenius proje
 ## Code Quality
 
 ### ESLint & Prettier
+
 - ESLint v9 with Airbnb config for consistent code style
 - Prettier for automatic code formatting
 - Configured to work together without conflicts
 
 ### Version Control & CI
+
 - Git for version control
 - Husky for Git hooks
 - GitHub Actions planned for CI/CD
@@ -85,6 +95,7 @@ This document outlines the key technical decisions made for the ChatGenius proje
 ## Security
 
 ### Authentication
+
 - **Auth0**: Chosen for:
   - Robust security features
   - Social login support
@@ -93,23 +104,57 @@ This document outlines the key technical decisions made for the ChatGenius proje
   - Enterprise features
 
 ### API Security
+
 - **Helmet**: Security headers
 - **CORS**: Cross-origin resource sharing
 - **Rate Limiting**: Protection against abuse
 - Environment variables for sensitive data
 
+## Monitoring & Logging
+
+### Frontend Logging
+
+- **LogRocket**: Selected for:
+  - Session replay capabilities
+  - Error tracking with stack traces
+  - Performance monitoring
+  - Network request monitoring
+  - Console logs capture
+  - Redux state tracking
+  - Easy integration with React
+
+### Backend Logging
+
+- **Winston**: Chosen for:
+  - Structured logging
+  - Multiple transports
+  - Custom log levels
+  - Excellent performance
+  - Rich metadata support
+
+### ESLint Configuration
+
+- Custom rules to enforce:
+  - LogRocket usage in frontend
+  - Winston usage in backend
+  - No console.\* statements
+  - Proper error handling
+
 ## Future Considerations
 
 1. **React 19 Upgrade**
+
    - Monitor Auth0 React SDK for React 19 support
    - Plan upgrade when compatibility is confirmed
 
 2. **Database Scaling**
+
    - Consider connection pooling optimization
    - Plan for read replicas if needed
    - Evaluate caching strategies
 
 3. **Monitoring & Logging**
+
    - Implement comprehensive logging strategy
    - Set up monitoring and alerting
    - Consider APM solutions
@@ -117,4 +162,4 @@ This document outlines the key technical decisions made for the ChatGenius proje
 4. **Performance Optimization**
    - Implement code splitting
    - Add service worker for offline support
-   - Optimize asset delivery 
+   - Optimize asset delivery
