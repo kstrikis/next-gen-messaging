@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import LeftSidebar from './LeftSidebar';
 
 export default function MainLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -13,21 +14,7 @@ export default function MainLayout({ children }) {
       <div className={`grid h-full ${isSidebarOpen ? 'grid-cols-[260px_1fr_auto]' : 'grid-cols-[0_1fr_auto]'}`}>
         {/* Left Sidebar */}
         <aside className={`border-r border-border bg-sidebar transition-all duration-300 ${isSidebarOpen ? 'w-[260px]' : 'w-0 opacity-0'}`}>
-          {/* Placeholder for LeftSidebar component */}
-          <div className="flex h-full flex-col">
-            <div className="h-12 border-b border-border p-2">
-              {/* WorkspaceSwitcher will go here */}
-              <button 
-                onClick={toggleSidebar}
-                className="text-sm text-muted-foreground hover:text-foreground"
-              >
-                Toggle Sidebar
-              </button>
-            </div>
-            <nav className="flex-1">
-              {/* Navigation content will go here */}
-            </nav>
-          </div>
+          <LeftSidebar onToggle={toggleSidebar} />
         </aside>
 
         {/* Main Content Area */}
