@@ -3,6 +3,23 @@
 # Store the root directory
 ROOT_DIR=$(pwd)
 
+# Cleanup function
+cleanup() {
+  echo "Cleaning up processes..."
+  # Kill any processes on our ports
+  kill -9 $(lsof -t -i:3000,3001) 2>/dev/null || true
+  # Kill any lingering nodemon processes
+  pkill -f nodemon || true
+  # Kill any lingering npm run dev processes
+  pkill -f "npm run dev" || true
+}
+
+# Set up cleanup on script exit
+trap cleanup EXIT
+
+# Clean up any existing processes before starting
+cleanup
+
 # Run full test suite before push
 npm run test:all || exit 1
 
