@@ -123,7 +123,7 @@ log_step "Public IP: $PUBLIC_IP"
 
 # Clone repository
 log_step "Cloning repository..."
-git clone https://github.com/kstrikis/next-gen-messaging.git .
+git clone -b feat/aws-deployment https://github.com/kstrikis/next-gen-messaging.git .
 check_status "Repository clone"
 
 # Create .env file
