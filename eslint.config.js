@@ -7,6 +7,7 @@ import importPlugin from 'eslint-plugin-import';
 import prettierConfig from 'eslint-config-prettier';
 import storybookPlugin from 'eslint-plugin-storybook';
 import cypressPlugin from 'eslint-plugin-cypress';
+import enforceLogging from './eslint-local-rules/enforce-logging.js';
 
 export default [
   js.configs.recommended,
@@ -48,13 +49,14 @@ export default [
       import: importPlugin,
       storybook: storybookPlugin,
       cypress: cypressPlugin,
+      logging: { rules: { 'enforce-logging': enforceLogging } },
     },
     rules: {
       // Airbnb style rules
       'no-var': 'error',
       'prefer-const': 'error',
-      'no-unused-vars': 'error',
-      'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'warn',
+      'no-unused-vars': ['error', { 'argsIgnorePattern': '^_' }],
+      'no-console': 'error',
       'comma-dangle': ['error', 'always-multiline'],
       'quotes': ['error', 'single'],
       'semi': ['error', 'always'],
@@ -65,13 +67,16 @@ export default [
       'space-before-function-paren': ['error', {
         anonymous: 'always',
         named: 'never',
-        asyncArrow: 'always'
+        asyncArrow: 'always',
       }],
       'space-before-blocks': ['error', 'always'],
       'keyword-spacing': ['error', { before: true, after: true }],
       'eol-last': ['error', 'always'],
       'no-multiple-empty-lines': ['error', { max: 1, maxEOF: 0 }],
       'import/prefer-default-export': 'off',
+      
+      // Logging rules
+      'logging/enforce-logging': 'error',
       
       // React specific rules
       ...reactPlugin.configs.recommended.rules,
@@ -95,10 +100,10 @@ export default [
         },
         alias: {
           map: [
-            ['@', './client/src']
+            ['@', './client/src'],
           ],
-          extensions: ['.js', '.jsx']
-        }
+          extensions: ['.js', '.jsx'],
+        },
       },
       next: {
         rootDir: 'client',
@@ -106,9 +111,9 @@ export default [
     },
   },
   {
-    files: ['server/**/*.js'],
+    files: ['**/logger.js', '**/loggerHelpers.js'],
     rules: {
-      'no-console': 'off',
+      'no-console': ['error', { allow: ['error'] }],
     },
   },
   prettierConfig,

@@ -1,0 +1,104 @@
+For each feature, the following steps will be performed:
+
+Step A: Write Tests First (TDD Approach)
+
+- Define Feature Requirements: Document detailed requirements in /documentation/features/feature-name.md and /docs/TODO.md.
+- Read Relevant Documentation and Files: Familiarize yourself with existing documentation and code that pertains to the feature.
+- Write Unit Tests: Use Jest to write tests for individual units/components.
+- Write Integration Tests: Use SuperTest to test API endpoints and interactions.
+- Write End-to-End Tests: Use Cypress to simulate user flows related to the feature.
+- Ensure Tests Cover Edge Cases: Include tests for both typical and atypical scenarios.
+
+Step B: Implement the Feature
+
+- Develop Code to Pass Tests: Write code that fulfills the requirements and passes all tests.
+- Follow Code Conventions: Ensure code adheres to Airbnb style guide and passes ESLint checks.
+- Update UI/UX Elements: Align implementation with UI/UX guidelines.
+- Document Code: Use JSDoc comments for functions and complex code blocks.
+
+Step C: Run Tests and Analyze Results
+
+- Run All Relevant Tests: Execute unit, integration, and E2E tests.
+- Fix Issues: Address any test failures or code quality issues.
+- Review Logs and Errors: Pay special attention to server errors, logs, and client data.
+
+Step D: Update Documentation
+
+- Update Feature Documentation: Amend /docs/TODO.md with any changes.
+- Ensure Machine-Parsable Format: Use clear headings, bullet points, and code snippets.
+- Update Any Other File in /docs Folder if Necessary: Check and update other relevant documents in the /docs directory.
+
+Step E: Commit and Push Changes
+
+- Create Pull Request: Merge feature branch into main branch after code review.
+
+Tech Stack (you may not deviate from this):
+Frontend Stack:
+- React.js: Dynamic UIs
+- Next.js: SSR, SSG
+- Tailwind CSS: Utility-first styling
+- Storybook: UI component testing
+- shadcn/ui: Tailwind-based UI components
+- Framer Motion: Animations & transitions
+
+Backend Stack:
+- Node.js v22 LTS: Server-side JS
+- Express.js: API framework
+- Helmet: Security middleware
+- Socket.IO: Real-time communication
+- Prisma: ORM
+
+State Management:
+- Redux Toolkit: Simplified state management
+- Redux Persist: State persistence
+
+Data Fetching:
+- Fetch API: HTTP requests
+- React Query: Server state management
+
+Authentication:
+- Auth0: Authentication & authorization
+
+Database:
+- PostgreSQL: Relational DB
+- Prisma Migrate: Schema migrations
+
+Logging & Monitoring:
+- Winston: Backend logging
+- LogRocket: Frontend monitoring
+
+Deployment and Infrastructure:
+- AWS Services: Cloud hosting
+- Terraform: IaC tool
+- Docker: Containerization
+
+CI/CD:
+- GitHub Actions: Automated CI/CD
+- Automated Tests: Test automation
+
+Environment Management:
+- dotenv: Local env variables
+- Twelve-Factor App Methodology: Environment config best practices
+
+Internationalization (i18n):
+- i18next: Language management
+
+Testing Frameworks:
+- Jest: Unit testing
+- SuperTest: API testing
+- Cypress: E2E testing
+- React Testing Library: React component testing
+- Coverage Tools: Test coverage reporting
+
+Code Quality and Conventions:
+- JavaScript (ES2022): Modern JS features
+- ESLint with Airbnb Guide: Code quality
+- Prettier: Code formatting
+- Husky: Git hook management
+
+Documentation Tools:
+- Markdown Files: Project docs
+- JSDoc: Inline code docs
+- OpenAPI (Swagger): API docs
+- Storybook Docs: UI component docs
+- Architecture Decision Records: Documenting architectural decisions
