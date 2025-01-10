@@ -186,6 +186,9 @@ Backend:
    - Client and server in single container
    - Production dependencies only
    - Nginx reverse proxy for routing
+   - Container healthcheck on port 3001
+   - Prisma client generation in both stages
+   - Netcat for database readiness checks
 
 2. Container Architecture:
 
@@ -203,11 +206,12 @@ Backend:
 
 4. EC2 Setup:
 
-   - Ubuntu-based instance
-   - Docker + Docker Compose installation
+   - Using existing instance i-00b9543a918aee8bb (kstrikis-week1-chatgenius)
+   - Docker + Docker Compose installation via user data script
    - Automatic repository cloning
    - Environment configuration
    - Container orchestration
+   - Instance restarted to apply user data changes
 
 5. Networking:
 

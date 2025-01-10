@@ -2,19 +2,25 @@ version: '3.8'
 
 services:
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chatgenius-app
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/chatgenius?schema=public
       - PORT=3001
-      - CORS_ORIGIN=http://localhost
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - app-network
+    restart: unless-stopped
 
   db:
     image: postgres:latest
+    container_name: chatgenius-db
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -23,9 +29,16 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
   nginx:
     image: nginx:alpine
+    container_name: chatgenius-nginx
     ports:
       - "80:80"
     volumes:
@@ -34,6 +47,7 @@ services:
       - app
     networks:
       - app-network
+    restart: unless-stopped
 
 networks:
   app-network:

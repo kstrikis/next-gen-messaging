@@ -148,20 +148,21 @@ echo "To view application logs: docker-compose logs -f"
 EOF
 )
 
-# Launch EC2 instance
-echo "Launching EC2 instance..."
-INSTANCE_ID=$(aws ec2 run-instances \
-    --image-id ami-08353a303889d045d \
-    --instance-type t2.micro \
-    --key-name $KEY_NAME \
-    --subnet-id $SUBNET_ID \
-    --security-group-ids $SECURITY_GROUP_ID \
-    --user-data "$USER_DATA" \
-    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=kstrikis-week1-chatgenius}]" \
-    --query 'Instances[0].InstanceId' \
-    --output text)
+# Use existing instance
+echo "Using existing instance..."
+INSTANCE_ID="i-00b9543a918aee8bb"
 
-echo "Waiting for instance to be running..."
+# Send user data to existing instance
+echo "Sending user data to instance..."
+aws ec2 modify-instance-attribute \
+    --instance-id $INSTANCE_ID \
+    --user-data "$USER_DATA"
+
+# Restart the instance to apply user data
+echo "Restarting instance to apply changes..."
+aws ec2 stop-instances --instance-ids $INSTANCE_ID
+aws ec2 wait instance-stopped --instance-ids $INSTANCE_ID
+aws ec2 start-instances --instance-ids $INSTANCE_ID
 aws ec2 wait instance-running --instance-ids $INSTANCE_ID
 
 # Get instance public IP
