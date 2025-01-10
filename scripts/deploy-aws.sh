@@ -34,29 +34,9 @@ echo "Found VPC: $VPC_ID"
 SUBNET_ID="subnet-0245a1065b564d276"
 echo "Using existing subnet: $SUBNET_ID"
 
-# Create security group
-echo "Creating security group..."
-SECURITY_GROUP_ID=$(aws ec2 create-security-group \
-    --group-name chatgenius-sg \
-    --description "Security group for ChatGenius application" \
-    --vpc-id $VPC_ID \
-    --tag-specifications "ResourceType=security-group,Tags=[{Key=Name,Value=kstrikis-week1-chatgenius-sg}]" \
-    --output text \
-    --query 'GroupId')
-
-# Configure security group rules
-echo "Configuring security group rules..."
-aws ec2 authorize-security-group-ingress \
-    --group-id $SECURITY_GROUP_ID \
-    --protocol tcp \
-    --port 22 \
-    --cidr 0.0.0.0/0
-
-aws ec2 authorize-security-group-ingress \
-    --group-id $SECURITY_GROUP_ID \
-    --protocol tcp \
-    --port 80 \
-    --cidr 0.0.0.0/0
+# Use existing security group
+SECURITY_GROUP_ID="sg-020435edf9410848f"
+echo "Using existing security group: $SECURITY_GROUP_ID"
 
 # Create key pair
 KEY_NAME="chatgenius-key"
