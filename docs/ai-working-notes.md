@@ -9,10 +9,16 @@ Server:
 E2E Testing:
 
 - E2E tests must be run locally, not in CI
-- AI agent will automatically verify E2E test results when running locally
-- Start dev environment first, then run Cypress (never let Cypress manage the server)
-- Use wait-on to ensure server is ready before starting Cypress
-- Server must be accessible via 127.0.0.1 (not localhost) in local testing
+- Process management:
+  - Using trap to ensure cleanup of background processes
+  - All processes started with npm run dev
+  - wait-on ensures services are ready
+  - Automatic cleanup on script exit
+  - No orphaned processes
+- Service readiness:
+  - Wait for server health check (port 3001)
+  - Wait for client ready (port 3000)
+  - 30 second timeout for each service
 - Directory handling:
   - Stay in root directory for all operations
   - Use npm scripts (dev:server) instead of cd commands
@@ -94,8 +100,18 @@ Local Testing:
 
 ## Common Issues & Solutions
 
-- Server port conflicts: Ensure port 3001 is free before starting tests
+- Server port conflicts:
+  - Check for orphaned processes with `lsof -i :3000,3001`
+  - Previous test runs may leave Node processes running
+  - Express server uses port 3001
+  - Next.js client uses port 3000
+  - Always verify process cleanup after tests
 - Memory issues: Increased Node memory limit to 4GB
 - Network timeouts: Added explicit wait-on with 30s timeout
 - Debug logging: Enabled comprehensive debug output for troubleshooting
 - Video recording: Disabled in CI to improve performance
+- Process cleanup:
+  - Use `lsof` to check for running processes
+  - Use `ps -f -p PID` to identify process details
+  - Ensure proper signal handling in test setup
+  - Monitor process cleanup in test logs
