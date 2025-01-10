@@ -177,3 +177,53 @@ Backend:
    - Document state patterns
    - Add troubleshooting guides
    - Include accessibility notes
+
+## Deployment Configuration
+
+1. Docker Setup:
+
+   - Multi-stage Dockerfile for optimized builds
+   - Client and server in single container
+   - Production dependencies only
+   - Nginx reverse proxy for routing
+
+2. Container Architecture:
+
+   - App container: Node.js 22 (client + server)
+   - Database: PostgreSQL latest
+   - Nginx: Alpine-based reverse proxy
+   - Docker network for internal communication
+
+3. Environment Configuration:
+
+   - NODE_ENV=production
+   - Database URL with container networking
+   - CORS configuration for security
+   - Port mappings (80 -> 3000/3001)
+
+4. EC2 Setup:
+
+   - Ubuntu-based instance
+   - Docker + Docker Compose installation
+   - Automatic repository cloning
+   - Environment configuration
+   - Container orchestration
+
+5. Networking:
+
+   - Internal Docker network (bridge)
+   - Nginx reverse proxy for routing
+   - WebSocket support configured
+   - Port 80 exposed to internet
+
+6. Data Persistence:
+
+   - PostgreSQL volume for data
+   - Container restart policies
+   - Backup considerations
+
+7. Security:
+   - Internal container networking
+   - Environment variable isolation
+   - Nginx security headers
+   - No direct database exposure
