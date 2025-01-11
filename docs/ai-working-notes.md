@@ -190,7 +190,6 @@ Backend:
 
 ### Environment Variables
 
-- Set via Heroku dashboard or CLI: `heroku config:set KEY=VALUE`
 - Required variables:
   - DATABASE_URL: PostgreSQL connection string
   - PORT: Set by Heroku automatically
