@@ -97,11 +97,20 @@ The application can be deployed to AWS using the provided deployment script:
    CORS_ORIGIN=<your_frontend_url>
    ```
 
-3. Deployment:
+3. Build Process:
+
+   - Heroku automatically runs the `build` script
+   - The build script:
+     1. Installs all dependencies (root, client, server)
+     2. Builds the Next.js client
+     3. Builds the server (if needed)
+
+4. Deployment:
+
    - Push to Heroku using Git
    - Heroku will automatically:
-     - Install dependencies
-     - Build the Next.js client
+     - Install root dependencies using `npm install`
+     - Run the `build` script
      - Start the application using the root `npm start` command
 
 ## Known Issues
