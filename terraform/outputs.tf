@@ -22,3 +22,8 @@ output "security_group_id" {
   description = "ID of the security group"
   value       = local.security_group_id
 }
+
+output "vpc_id" {
+  description = "ID of the VPC"
+  value       = data.aws_vpc.existing.id
+}
