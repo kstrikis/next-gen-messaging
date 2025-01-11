@@ -5,8 +5,40 @@ import { PrismaClient } from '@prisma/client';
 import 'dotenv/config';
 import logger from './config/logger.js';
 
+// Load environment-specific .env file
+const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : 
+                process.env.NODE_ENV === 'production' ? '.env' : 
+                '.env.development';
+
+logger.info('Loading environment configuration', { 
+  nodeEnv: process.env.NODE_ENV,
+  envFile,
+  port: process.env.PORT || 3001,
+  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  databaseUrl: process.env.DATABASE_URL ? 'Set' : 'Not set'
+});
+
+// Required environment variables
+const requiredEnvVars = [
+  'DATABASE_URL',
+  'NODE_ENV',
+  'CORS_ORIGIN'
+];
+
+const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+if (missingEnvVars.length > 0) {
+  logger.error('Missing required environment variables:', { missingEnvVars });
+  process.exit(1);
+}
+
 const app = express();
 const port = process.env.PORT || 3001;
+
+logger.info('Server configuration:', { 
+  port,
+  nodeEnv: process.env.NODE_ENV,
+  databaseUrl: process.env.DATABASE_URL ? 'Set' : 'Not set'
+});
 
 // Middleware
 app.use(cors());

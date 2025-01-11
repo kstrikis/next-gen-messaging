@@ -181,7 +181,31 @@ Backend:
 
 ## Deployment Configuration
 
-See startup.md for detailed startup and deployment instructions.
+### Port Configuration
+
+- Client runs on port 3000 by default
+- Server runs on port 3001 by default
+- In production, ports are explicitly set via environment variables
+- Port conflicts are prevented by configuration in root package.json
+
+### Environment Variables
+
+- Set via Heroku dashboard or CLI: `heroku config:set KEY=VALUE`
+- Required variables:
+  - DATABASE_URL: PostgreSQL connection string
+  - PORT: Set by Heroku automatically
+  - NODE_ENV: Set to 'production'
+
+### Heroku Deployment
+
+- Uses Heroku container registry
+- Build process configured in package.json
+- Dependencies installed via heroku-postbuild
+- Client build included in deployment
+- Environment variables set in Heroku dashboard
+- Database provisioned via Heroku PostgreSQL
+- Automatic SSL/TLS configuration
+- Dyno scaling configuration
 
 1. Docker Setup:
 
@@ -234,3 +258,34 @@ See startup.md for detailed startup and deployment instructions.
    - Environment variable isolation
    - Nginx security headers
    - No direct database exposure
+
+## Environment Configuration
+
+### Environment Files
+
+- `.env.development`: Development environment variables
+- `.env.test`: Test environment variables
+- `.env`: Production environment variables
+- `.env.example`: Template for environment variables
+
+### Server Environment
+
+- Required variables validated on startup
+- Environment-specific configuration loaded automatically
+- Logging of environment state on startup
+- Graceful handling of missing variables
+
+### Client Environment
+
+- Next.js public variables prefixed with NEXT*PUBLIC*
+- Environment-specific configuration via Next.js conventions
+- API and socket URLs configured per environment
+- Feature flags managed via environment variables
+
+### Environment Loading
+
+- Development: `.env.development`
+- Test: `.env.test`
+- Production: `.env`
+- Variables validated at startup
+- Missing required variables trigger startup failure
