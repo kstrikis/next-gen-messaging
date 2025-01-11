@@ -7,6 +7,7 @@
 - Backend: Express.js, PostgreSQL, Prisma
 - Testing: Jest, Cypress
 - Logging: LogRocket (frontend), Winston (backend)
+- Deployment: Docker, AWS EC2, Heroku (see startup.md)
 
 ## Current Frontend Issues
 
@@ -179,6 +180,8 @@ Backend:
    - Include accessibility notes
 
 ## Deployment Configuration
+
+See startup.md for detailed startup and deployment instructions.
 
 1. Docker Setup:
 

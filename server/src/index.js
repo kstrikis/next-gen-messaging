@@ -13,6 +13,8 @@ app.use(cors());
 app.use(helmet());
 app.use(express.json());
 
+logger.info('ENV VARS', { ...process.env });
+
 // Initialize Prisma client with connection handling
 let prisma;
 try {

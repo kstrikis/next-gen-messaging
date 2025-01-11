@@ -7,12 +7,12 @@
     "test": "tests"
   },
   "scripts": {
-    "dev": "NODE_OPTIONS='--no-deprecation' nodemon src/index.js",
-    "start": "node src/index.js",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "test:integration": "jest --config jest.integration.config.js",
+    "dev": "NODE_ENV=development NODE_OPTIONS='--no-deprecation' nodemon src/index.js",
+    "start": "NODE_ENV=production node src/index.js",
+    "test": "NODE_ENV=test jest",
+    "test:watch": "NODE_ENV=test jest --watch",
+    "test:coverage": "NODE_ENV=test jest --coverage",
+    "test:integration": "NODE_ENV=test jest --config jest.integration.config.js",
     "build": "echo 'No build step required for server'",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",

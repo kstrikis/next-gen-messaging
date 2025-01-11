@@ -4,7 +4,7 @@
     "node": "22.x"
   },
   "version": "1.0.0",
-  "description": "A modern messaging platform with AI-powered features, built using Domain-Driven Design principles. ChatGenius combines Slack-like functionality with advanced AI capabilities for enhanced workplace communication.",
+  "description": "ChatGenius - A modern chat application",
   "main": "index.js",
   "type": "module",
   "directories": {
@@ -40,7 +40,7 @@
     "clean:build": "rm -rf client/.next server/dist",
     "install:all": "npm i && cd client && npm i && cd ../server && npm i",
     "update:all": "npm update && cd client && npm update && cd ../server && npm update",
-    "start": "cd server && npm start"
+    "start": "npm run build:client && NODE_ENV=production concurrently \"cd client && npm run start\" \"cd server && npm run start\""
   },
   "lint-staged": {
     "client/**/*.{js,jsx}": [

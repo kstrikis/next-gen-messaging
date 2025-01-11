@@ -18,6 +18,24 @@ npx prisma migrate deploy
 # Go back to app root
 cd /app
 
-# Start both services using the dev script
+# Start both services in production mode
 echo "Starting services..."
-npm run dev 
+if [ "$NODE_ENV" = "production" ]; then
+  # Build Next.js client
+  echo "Building Next.js client..."
+  cd client && npm run build
+  
+  # Start Next.js in production mode
+  echo "Starting Next.js..."
+  npm run start & 
+  
+  # Start Express server in production mode
+  echo "Starting Express server..."
+  cd ../server && npm run start &
+  
+  # Wait for both processes
+  wait
+else
+  # Use dev mode for development
+  npm run dev
+fi 
