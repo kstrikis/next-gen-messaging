@@ -33,12 +33,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy built client and server
-COPY --from=builder /app/client/.next ./client/.next
-COPY --from=builder /app/client/public ./client/public
-COPY --from=builder /app/client/package*.json ./client/
-COPY --from=builder /app/client/next.config.mjs ./client/
-COPY --from=builder /app/server ./server
-COPY --from=builder /app/package*.json ./
+COPY --from=builder /app .
 
 # Install production dependencies only
 ENV NODE_ENV=production
