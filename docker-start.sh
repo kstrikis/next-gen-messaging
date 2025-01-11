@@ -27,11 +27,11 @@ if [ "$NODE_ENV" = "production" ]; then
   
   # Start Next.js in production mode
   echo "Starting Next.js..."
-  npm run start & 
+  PORT=3000 npm run start & 
   
   # Start Express server in production mode
   echo "Starting Express server..."
-  cd ../server && npm run start &
+  cd ../server && PORT=3001 npm run start &
   
   # Wait for both processes
   wait
