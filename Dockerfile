@@ -19,6 +19,8 @@ COPY . .
 RUN cd server && npx prisma generate
 
 # Build client
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV ESLINT_SKIP=true
 RUN cd client && npm run build
 
 # Production stage
