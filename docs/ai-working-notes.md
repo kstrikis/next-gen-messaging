@@ -7,6 +7,7 @@
 - Backend: Express.js, PostgreSQL, Prisma
 - Testing: Jest, Cypress
 - Logging: LogRocket (frontend), Winston (backend)
+- Deployment: Docker, AWS EC2, Heroku (see startup.md)
 
 ## Current Frontend Issues
 
@@ -177,3 +178,114 @@ Backend:
    - Document state patterns
    - Add troubleshooting guides
    - Include accessibility notes
+
+## Deployment Configuration
+
+### Port Configuration
+
+- Client runs on port 3000 by default
+- Server runs on port 3001 by default
+- In production, ports are explicitly set via environment variables
+- Port conflicts are prevented by configuration in root package.json
+
+### Environment Variables
+
+- Set via Heroku dashboard or CLI: `heroku config:set KEY=VALUE`
+- Required variables:
+  - DATABASE_URL: PostgreSQL connection string
+  - PORT: Set by Heroku automatically
+  - NODE_ENV: Set to 'production'
+
+### Heroku Deployment
+
+- Uses Heroku container registry
+- Build process configured in package.json
+- Dependencies installed via heroku-postbuild
+- Client build included in deployment
+- Environment variables set in Heroku dashboard
+- Database provisioned via Heroku PostgreSQL
+- Automatic SSL/TLS configuration
+- Dyno scaling configuration
+
+1. Docker Setup:
+
+   - Multi-stage Dockerfile for optimized builds
+   - Client and server in single container
+   - Production dependencies only
+   - Nginx reverse proxy for routing
+   - Container healthcheck on port 3001
+   - Prisma client generation in both stages
+   - Netcat for database readiness checks
+
+2. Container Architecture:
+
+   - App container: Node.js 22 (client + server)
+   - Database: PostgreSQL latest
+   - Nginx: Alpine-based reverse proxy
+   - Docker network for internal communication
+
+3. Environment Configuration:
+
+   - NODE_ENV=production
+   - Database URL with container networking
+   - CORS configuration for security
+   - Port mappings (80 -> 3000/3001)
+
+4. EC2 Setup:
+
+   - Using existing instance i-00b9543a918aee8bb (kstrikis-week1-chatgenius)
+   - Docker + Docker Compose installation via user data script
+   - Automatic repository cloning
+   - Environment configuration
+   - Container orchestration
+   - Instance restarted to apply user data changes
+
+5. Networking:
+
+   - Internal Docker network (bridge)
+   - Nginx reverse proxy for routing
+   - WebSocket support configured
+   - Port 80 exposed to internet
+
+6. Data Persistence:
+
+   - PostgreSQL volume for data
+   - Container restart policies
+   - Backup considerations
+
+7. Security:
+   - Internal container networking
+   - Environment variable isolation
+   - Nginx security headers
+   - No direct database exposure
+
+## Environment Configuration
+
+### Environment Files
+
+- `.env.development`: Development environment variables
+- `.env.test`: Test environment variables
+- `.env`: Production environment variables
+- `.env.example`: Template for environment variables
+
+### Server Environment
+
+- Required variables validated on startup
+- Environment-specific configuration loaded automatically
+- Logging of environment state on startup
+- Graceful handling of missing variables
+
+### Client Environment
+
+- Next.js public variables prefixed with NEXT*PUBLIC*
+- Environment-specific configuration via Next.js conventions
+- API and socket URLs configured per environment
+- Feature flags managed via environment variables
+
+### Environment Loading
+
+- Development: `.env.development`
+- Test: `.env.test`
+- Production: `.env`
+- Variables validated at startup
+- Missing required variables trigger startup failure
