@@ -59,7 +59,6 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.25.9",
     "@eslint/js": "^8.57.1",
-    "concurrently": "^9.1.2",
     "cypress": "^13.17.0",
     "eslint": "^8.57.0",
     "eslint-config-airbnb": "^19.0.4",
@@ -75,15 +74,16 @@
     "globals": "^15.14.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.2.2",
-    "prettier": "^3.4.2",
-    "tcp-port-used": "^1.0.2",
-    "wait-on": "^8.0.2"
+    "prettier": "^3.4.2"
   },
   "dependencies": {
+    "concurrently": "^9.1.2",
     "glob": "^11.0.0",
     "logrocket": "^9.0.1",
     "rimraf": "^6.0.1",
     "stack-trace": "^1.0.0-pre2",
+    "tcp-port-used": "^1.0.2",
+    "wait-on": "^8.0.2",
     "winston": "^3.17.0"
   }
 }
