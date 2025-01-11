@@ -7,7 +7,40 @@
 - Backend: Express.js, PostgreSQL, Prisma
 - Testing: Jest, Cypress
 - Logging: LogRocket (frontend), Winston (backend)
-- Deployment: Docker, AWS EC2, Heroku (see startup.md)
+- Infrastructure: Terraform, AWS EC2, Docker
+
+## Infrastructure Configuration
+
+1. AWS Resources:
+
+   - Using existing VPC (vpc-025ad8b8b2d701979)
+   - Subnet: 10.0.1.0/24 in us-east-1a
+   - Security Group: Open ports 22, 80, 443, 3000-3001
+   - EC2: t2.micro with Ubuntu 24.04 (ami-079cb33ef719a7b78)
+   - 20GB gp3 root volume
+
+2. Resource Naming/Tagging:
+
+   - Format: {owner}-{project}-{environment}
+   - Example: kstrikis-chatgenius-development
+   - All resources tagged with:
+     - Environment (development/production)
+     - Project (chatgenius)
+     - Owner (kstrikis)
+     - Repository (kstrikis/next-gen-messaging)
+     - ManagedBy (terraform)
+
+3. Safety Checks:
+
+   - Verify VPC exists
+   - Check for subnet CIDR conflicts
+   - Check for security group name conflicts
+   - Validate resource existence before EC2 creation
+
+4. Deployment Environments:
+   - Development: terraform workspace "development"
+   - Production: terraform workspace "production"
+   - Identical configuration, separate state
 
 ## Current Frontend Issues
 

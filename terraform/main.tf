@@ -33,9 +33,8 @@ data "aws_subnet" "vpc_subnet_details" {
 
 locals {
   existing_cidrs = [for s in data.aws_subnet.vpc_subnet_details : s.cidr_block]
-  new_cidr       = "10.0.1.0/24"
-
-  cidr_exists = contains(local.existing_cidrs, local.new_cidr)
+  new_cidr       = "10.1.2.0/24"
+  cidr_exists    = contains(local.existing_cidrs, local.new_cidr)
 }
 
 # Try to find existing subnet with our tag
@@ -47,7 +46,7 @@ data "aws_subnets" "existing" {
 
   filter {
     name   = "tag:Name"
-    values = [local.name_prefix]
+    values = ["kstrikis"]
   }
 }
 
@@ -57,7 +56,7 @@ locals {
 
 # Create subnet if it doesn't exist and CIDR is available
 resource "aws_subnet" "main" {
-  count             = local.existing_subnet_id == null && !local.cidr_exists ? 1 : 0
+  count             = local.existing_subnet_id == null ? 1 : 0
   vpc_id            = data.aws_vpc.existing.id
   cidr_block        = local.new_cidr
   availability_zone = "us-east-1a"
@@ -67,6 +66,7 @@ resource "aws_subnet" "main" {
       condition     = !local.cidr_exists
       error_message = "CIDR block ${local.new_cidr} already exists in VPC ${data.aws_vpc.existing.id}"
     }
+    prevent_destroy = true
   }
 
   tags = {
@@ -138,6 +138,7 @@ resource "aws_security_group" "app" {
       condition     = !local.sg_name_exists
       error_message = "Security group with name ${local.name_prefix} already exists in VPC ${data.aws_vpc.existing.id}"
     }
+    prevent_destroy = true
   }
 
   ingress {
@@ -206,6 +207,7 @@ resource "aws_instance" "app" {
   ami           = var.ami_id
   instance_type = var.instance_type
   subnet_id     = local.subnet_id
+  key_name      = "kstrikis-key"
 
   vpc_security_group_ids = [local.security_group_id]
 
@@ -215,9 +217,10 @@ resource "aws_instance" "app" {
               apt-get install -y docker.io docker-compose git
               systemctl start docker
               systemctl enable docker
+              usermod -aG docker ubuntu
               
-              # Clone repository
-              git clone https://github.com/${var.github_repo}.git /app
+              # Clone repository with specific branch
+              git clone -b feat/terraform-aws https://github.com/${var.github_repo}.git /app
               cd /app
               
               # Start application
