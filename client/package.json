@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "NODE_ENV=development next dev",
-    "build": "NODE_ENV=production next build",
-    "start": "NODE_ENV=production next start",
+    "dev": "NODE_ENV=development next dev -p ${PORT:-${CLIENT_PORT:-3000}}",
+    "build": "next build",
+    "start": "echo \"Starting client...\" && NODE_ENV=production next start -p ${PORT:-${CLIENT_PORT:-3000}}",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "test": "NODE_ENV=test jest",

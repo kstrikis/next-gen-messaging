@@ -13,7 +13,7 @@ const envFile = process.env.NODE_ENV === 'test' ? '.env.test' :
 logger.info('Loading environment configuration', { 
   nodeEnv: process.env.NODE_ENV,
   envFile,
-  port: process.env.PORT || 3001,
+  port: process.env.SERVER_PORT || 3001,
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
   databaseUrl: process.env.DATABASE_URL ? 'Set' : 'Not set'
 });
@@ -32,7 +32,7 @@ if (missingEnvVars.length > 0) {
 }
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.SERVER_PORT || 3001;
 
 logger.info('Server configuration:', { 
   port,
@@ -44,8 +44,6 @@ logger.info('Server configuration:', {
 app.use(cors());
 app.use(helmet());
 app.use(express.json());
-
-logger.info('ENV VARS', { ...process.env });
 
 // Initialize Prisma client with connection handling
 let prisma;

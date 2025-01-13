@@ -7,7 +7,7 @@
 - Backend: Express.js, PostgreSQL, Prisma
 - Testing: Jest, Cypress
 - Logging: LogRocket (frontend), Winston (backend)
-- Infrastructure: Terraform, AWS EC2, Docker
+- Infrastructure: Terraform, AWS EC2, Docker, Heroku
 
 ## Infrastructure Configuration
 
@@ -230,16 +230,44 @@ Backend:
 
 ### Heroku Deployment
 
-- Uses Heroku container registry
-- Build process configured in package.json
-- Dependencies installed via heroku-postbuild
-- Client build included in deployment
-- Environment variables set in Heroku dashboard
-- Database provisioned via Heroku PostgreSQL
-- Automatic SSL/TLS configuration
-- Dyno scaling configuration
+- Monorepo deployment configuration:
+  - Uses root package.json scripts
+  - Procfile runs both client and server
+  - Automatic database migrations on release
+  - Concurrent process management
+  - Uses Node.js 22.x runtime
+  - Builds both client and server
 
-1. Docker Setup:
+Required Configuration:
+
+1. Environment Variables:
+
+   - DATABASE_URL: PostgreSQL connection string
+   - NODE_ENV: 'production'
+   - CORS_ORIGIN: Heroku app URL
+   - All other variables from .env.example
+
+2. Build Process:
+
+   - heroku-postbuild script handles installation
+   - Builds both client and server
+   - Runs Prisma migrations on release
+   - Starts both services concurrently
+
+3. Resource Requirements:
+
+   - Minimum: Standard-1X dyno
+   - PostgreSQL addon
+   - Build pack: heroku/nodejs
+
+4. Scaling Considerations:
+
+   - Client and server run on same dyno
+   - Consider separate deployments for scale
+   - Monitor memory usage
+   - Watch for concurrent connection limits
+
+5. Docker Setup:
 
    - Multi-stage Dockerfile for optimized builds
    - Client and server in single container
@@ -249,21 +277,21 @@ Backend:
    - Prisma client generation in both stages
    - Netcat for database readiness checks
 
-2. Container Architecture:
+6. Container Architecture:
 
    - App container: Node.js 22 (client + server)
    - Database: PostgreSQL latest
    - Nginx: Alpine-based reverse proxy
    - Docker network for internal communication
 
-3. Environment Configuration:
+7. Environment Configuration:
 
    - NODE_ENV=production
    - Database URL with container networking
    - CORS configuration for security
    - Port mappings (80 -> 3000/3001)
 
-4. EC2 Setup:
+8. EC2 Setup:
 
    - Using existing instance i-00b9543a918aee8bb (kstrikis-week1-chatgenius)
    - Docker + Docker Compose installation via user data script
@@ -272,24 +300,24 @@ Backend:
    - Container orchestration
    - Instance restarted to apply user data changes
 
-5. Networking:
+9. Networking:
 
    - Internal Docker network (bridge)
    - Nginx reverse proxy for routing
    - WebSocket support configured
    - Port 80 exposed to internet
 
-6. Data Persistence:
+10. Data Persistence:
 
-   - PostgreSQL volume for data
-   - Container restart policies
-   - Backup considerations
+    - PostgreSQL volume for data
+    - Container restart policies
+    - Backup considerations
 
-7. Security:
-   - Internal container networking
-   - Environment variable isolation
-   - Nginx security headers
-   - No direct database exposure
+11. Security:
+    - Internal container networking
+    - Environment variable isolation
+    - Nginx security headers
+    - No direct database exposure
 
 ## Environment Configuration
 
