@@ -25,9 +25,9 @@ const ANONYMOUS_ANIMALS = [
 ];
 
 const generateGuestUsername = (baseName = '') => {
-  // Clean and truncate the base name
+  // Clean the base name, allowing letters, numbers, spaces, dots, hyphens, and underscores
   const cleanName = baseName.trim()
-    .replace(/[^\p{L}\p{N}\s\-_]/gu, '') // Only allow letters, numbers, spaces, hyphens, and underscores
+    .replace(/[^\p{L}\p{N}\s\-_.]/gu, '') // Allow dots in addition to other characters
     .trim();
 
   // If no name provided or name is invalid after cleaning, generate an anonymous name
@@ -36,21 +36,24 @@ const generateGuestUsername = (baseName = '') => {
     return `Anonymous ${randomAnimal}`;
   }
 
-  // Truncate name if too long (leaving room for prefix)
-  const maxNameLength = 50;
+  // Truncate name if too long (leaving room for prefix and suffix)
+  const maxNameLength = 30; // Reduced to ensure total length stays under 50 with prefix
   const truncatedName = cleanName.length > maxNameLength ? 
     cleanName.substring(0, maxNameLength) : cleanName;
 
   return truncatedName;
 };
 
-const findUniqueGuestUsername = async (baseName) => {
+export const findUniqueGuestUsername = async (baseName = '') => {
   const maxAttempts = 100;
   let attempts = 0;
   
+  // Generate base username
+  const baseUsername = generateGuestUsername(baseName);
+  
   while (attempts < maxAttempts) {
-    const randomNum = Math.floor(Math.random() * 10000);
-    const guestUsername = `guest${randomNum.toString().padStart(4, '0')}_${baseName}`;
+    const guestNum = String(Math.floor(1000 + Math.random() * 9000)); // 4-digit number between 1000-9999
+    const guestUsername = `guest${guestNum}_${baseUsername}`;
     
     // Check if username exists
     const existingUser = await prisma.user.findUnique({
@@ -66,9 +69,9 @@ const findUniqueGuestUsername = async (baseName) => {
   
   // If we couldn't find a unique name after max attempts, 
   // generate a completely random one as fallback
-  const timestamp = Date.now();
-  const randomNum = Math.floor(Math.random() * 10000);
-  return `guest${timestamp}${randomNum}`;
+  const guestNum = String(Math.floor(1000 + Math.random() * 9000));
+  const randomAnimal = ANONYMOUS_ANIMALS[Math.floor(Math.random() * ANONYMOUS_ANIMALS.length)];
+  return `guest${guestNum}_Anonymous ${randomAnimal}`;
 };
 
 export const register = async (req, res) => {
@@ -98,12 +101,25 @@ export const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Find general channel
+    const generalChannel = await prisma.channel.findUnique({
+      where: { name: 'general' }
+    });
+
+    if (!generalChannel) {
+      logger.error('General channel not found during user registration');
+      return res.status(500).json({ error: 'Server error during registration' });
+    }
+
     const user = await prisma.user.create({
       data: {
         email,
         username,
         passwordHash: hashedPassword,
-        isGuest: false
+        isGuest: false,
+        channels: {
+          connect: { id: generalChannel.id }
+        }
       }
     });
 
@@ -176,17 +192,27 @@ export const guestLogin = async (req, res) => {
   try {
     const { username: rawUsername } = req.body;
     
-    // Generate base username (either cleaned user input or anonymous animal name)
-    const baseUsername = generateGuestUsername(rawUsername);
-    
     // Find a unique guest username
-    const uniqueUsername = await findUniqueGuestUsername(baseUsername);
+    const uniqueUsername = await findUniqueGuestUsername(rawUsername);
+
+    // Find general channel
+    const generalChannel = await prisma.channel.findUnique({
+      where: { name: 'general' }
+    });
+
+    if (!generalChannel) {
+      logger.error('General channel not found during guest login');
+      return res.status(500).json({ error: 'Server error during guest login' });
+    }
 
     // Create guest user
     const user = await prisma.user.create({
       data: {
         username: uniqueUsername,
         isGuest: true,
+        channels: {
+          connect: { id: generalChannel.id }
+        }
       }
     });
 
@@ -227,6 +253,16 @@ export const handleAuth0Callback = async (req, res) => {
 
     logger.info('Processing Auth0 user:', { email, sub });
 
+    // Find general channel
+    const generalChannel = await prisma.channel.findUnique({
+      where: { name: 'general' }
+    });
+
+    if (!generalChannel) {
+      logger.error('General channel not found during Auth0 callback');
+      return res.status(500).json({ error: 'Server error during Auth0 callback' });
+    }
+
     try {
       // First try to find user by Auth0 ID
       let user = await prisma.user.findFirst({
@@ -246,11 +282,14 @@ export const handleAuth0Callback = async (req, res) => {
             where: { id: user.id },
             data: { 
               auth0Id: sub,
-              lastSeen: new Date()
+              lastSeen: new Date(),
+              channels: {
+                connect: { id: generalChannel.id }
+              }
             }
           });
         } else {
-          // No user found - create new one
+          // New user - create them
           logger.info('Creating new user from Auth0');
           user = await prisma.user.create({
             data: {
@@ -258,40 +297,43 @@ export const handleAuth0Callback = async (req, res) => {
               username: nickname || email.split('@')[0],
               auth0Id: sub,
               isGuest: false,
-              lastSeen: new Date()
+              lastSeen: new Date(),
+              channels: {
+                connect: { id: generalChannel.id }
+              }
             }
           });
         }
       } else {
-        // User found by Auth0 ID - update lastSeen
+        // User found by Auth0 ID - update last seen
         logger.info('Updating existing Auth0 user');
         user = await prisma.user.update({
           where: { id: user.id },
-          data: { lastSeen: new Date() }
+          data: { 
+            lastSeen: new Date(),
+            channels: {
+              connect: { id: generalChannel.id }
+            }
+          }
         });
       }
 
-      // Generate our own JWT
-      const appToken = generateToken(user.id, false);
-      logger.info('Generated JWT token for user');
-
-      logger.info(`Auth0 user processed successfully: ${user.email}`);
+      const token = generateToken(user.id, false);
       
       return res.status(200).json({
-        token: appToken,
+        token,
         user: {
           id: user.id,
           email: user.email,
           username: user.username,
-          isGuest: user.isGuest
-        }
+        },
       });
-    } catch (dbError) {
-      logger.error('Database error during Auth0 callback:', dbError);
-      return res.status(500).json({ error: 'Database error during user processing' });
+    } catch (error) {
+      logger.error('Database error during Auth0 callback:', error);
+      return res.status(500).json({ error: 'Database error during Auth0 callback' });
     }
   } catch (error) {
     logger.error('Auth0 callback error:', error);
-    return res.status(500).json({ error: 'Server error during Auth0 callback', message: error.message });
+    return res.status(500).json({ error: 'Server error during Auth0 callback' });
   }
 }; 

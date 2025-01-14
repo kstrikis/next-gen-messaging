@@ -4,6 +4,7 @@ import logger from '../config/logger.js';
 import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
 import { authenticateJWT } from '../middleware/auth.js';
+import { findUniqueGuestUsername } from '../controllers/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -102,14 +103,16 @@ router.get('/auth0/callback', async (req, res) => {
 // Guest login
 router.post('/guest', async (req, res) => {
   try {
-    // Generate a random guest username
-    const guestUsername = `guest_${Math.random().toString(36).substring(2, 8)}`;
+    const { username } = req.body;
     
-    // Create a guest user
+    // Use the guest name generation functions from auth controller
+    const uniqueUsername = await findUniqueGuestUsername(username || '');
+    
+    // Create guest user
     const user = await prisma.user.create({
       data: {
-        username: guestUsername,
-        email: `${guestUsername}@guest.local`,
+        username: uniqueUsername,
+        email: `${uniqueUsername}@guest.local`,
         isGuest: true
       }
     });

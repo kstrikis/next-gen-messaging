@@ -89,10 +89,11 @@
      - Profile synced from Auth0
      - Unique auth0Id in database
    - Guest Users:
-     - Optional username input
+     - No custom name input (removed)
      - Automatic unique name generation
-     - Format: guestXXXX_username or guestXXXX_Anonymous Animal
-     - Unicode support for international names
+     - Format: guestXXXX_Anonymous Animal (e.g. guest1234_Anonymous Giraffe)
+     - Always uses random animal name from predefined list
+     - Unique 4-digit number prefix
    - Last seen tracking for user presence
 
 7. JWT Implementation:
@@ -505,9 +506,10 @@ Required Configuration:
 
 1. Guest access:
    - Backend generates unique guest username
-   - Supports international characters
-   - Preserves underscores
-   - Fallback to timestamp-based names
+   - Format: guestXXXX_Anonymous Animal (e.g. guest1234_Anonymous Giraffe)
+   - Consistent format across all guest login routes
+   - Unique 4-digit number prefix
+   - Random animal name from predefined list
 2. Auth0 login:
    - Configured with tenant domain
    - Protected routes with authentication check
@@ -858,3 +860,55 @@ Required Configuration:
    - Database load
    - API performance
    - Error tracking
+
+## Channel Implementation
+
+1. Default Channels:
+
+   - General channel created by default in both main and test databases
+   - All users automatically added to general channel on registration/login
+   - Channel membership tracked in database through many-to-many relationship
+
+2. Database Seeding:
+   - Main database (chatgenius):
+     - Seeded with general channel only
+     - Uses upsert to avoid duplicates
+   - Test database (chatgenius_test):
+     - Seeded with general channel and test users
+     - Clean slate on each test run
+     - Test users automatically added to general channel
+   - Explicit logging of which database is being seeded
+   - Uses dotenvx for environment-specific seeding
+
+## Database Seeding
+
+1. Manual Seeding Commands:
+
+   - Main database (chatgenius):
+     ```bash
+     cd server && npm run db:seed
+     ```
+   - Test database (chatgenius_test):
+     ```bash
+     cd server && npm run db:seed:test
+     ```
+
+2. Automated Test Database Setup:
+
+   - Handled by `server/scripts/setup-test-db.js`
+   - Triggered automatically when running:
+     - E2E tests (`npm run test:e2e`)
+     - Test server (`npm run start:test`)
+   - Process:
+     1. Drops existing test database
+     2. Creates fresh test database
+     3. Runs all migrations
+     4. Seeds test data using `seed-test.js`
+   - Ensures clean test environment for each run
+
+3. Seeding Features:
+   - Explicit database logging (shows which database is being seeded)
+   - Uses dotenvx for environment-specific configuration
+   - Creates general channel in both databases
+   - Connects all users to general channel
+   - Test database includes sample users of each type

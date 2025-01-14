@@ -1,14 +1,31 @@
 import { PrismaClient } from '@prisma/client';
-import logger from '../src/config/logger.js';
+import winston from 'winston';
+
+// Create a dedicated logger for seeding
+const seedLogger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.colorize(),
+    winston.format.simple()
+  ),
+  transports: [
+    new winston.transports.Console()
+  ]
+});
 
 const prisma = new PrismaClient();
 
 async function seedTestData() {
   try {
-    logger.info('🌱 Seeding test database...');
+    // Log which database we're seeding
+    const databaseUrl = process.env.DATABASE_URL;
+    const dbName = databaseUrl.match(/\/([^/?]+)(?:\?|$)/)?.[1] || 'unknown';
+    seedLogger.info(`🌱 Seeding test database: ${dbName}`);
 
     // Clean existing data
     await prisma.user.deleteMany();
+    await prisma.channel.deleteMany();
+    seedLogger.info(`🧹 Cleaned existing data in ${dbName}`);
 
     // Create test users
     const users = await Promise.all([
@@ -47,9 +64,23 @@ async function seedTestData() {
       })
     ]);
 
-    logger.info(`✅ Created ${users.length} test users`);
+    // Create general channel
+    await prisma.channel.create({
+      data: {
+        name: 'general',
+        description: 'General discussion channel',
+        isPrivate: false,
+        members: {
+          connect: users.map(user => ({ id: user.id }))
+        }
+      }
+    });
+
+    seedLogger.info(`✅ Created ${users.length} test users and general channel in ${dbName}`);
   } catch (error) {
-    logger.error('❌ Error seeding test data:', error);
+    const databaseUrl = process.env.DATABASE_URL;
+    const dbName = databaseUrl.match(/\/([^/?]+)(?:\?|$)/)?.[1] || 'unknown';
+    seedLogger.error(`❌ Error seeding ${dbName}:`, { error: error.message });
     throw error;
   } finally {
     await prisma.$disconnect();

@@ -19,6 +19,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
+    "db:seed": "dotenvx run --env-file=.env -- node prisma/seed.js",
+    "db:seed:test": "dotenvx run --env-file=.env.test -- node prisma/seed-test.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{js,jsx,json,md}\""

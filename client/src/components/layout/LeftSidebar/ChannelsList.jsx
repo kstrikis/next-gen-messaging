@@ -27,7 +27,7 @@ export default function ChannelsList() {
         });
         setChannels(response.data.channels);
       } catch (error) {
-        logger.error('Failed to fetch channels:', error);
+        logger.error('Failed to fetch channels:', error.response?.data?.error || error.message);
       }
     };
 

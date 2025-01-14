@@ -40,9 +40,9 @@ export default function MessagesContainer({ type = 'channel', channelId }) {
           });
           setChannel(channelResponse.data.channel);
         }
-      } catch (err) {
-        logger.error('Failed to fetch data:', err);
-        setError(err.response?.data?.error || err.message);
+      } catch (error) {
+        logger.error('Failed to fetch data:', error.response?.data?.error || error.message);
+        setError(error.response?.data?.error || error.message);
       } finally {
         setIsLoading(false);
       }

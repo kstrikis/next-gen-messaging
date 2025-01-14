@@ -2,10 +2,12 @@
 
 import { HelpCircle, Settings } from 'lucide-react';
 import LogoutButton from '@/components/auth/LogoutButton';
+import UserInfo from './UserInfo';
 
 export default function ActionsMenu() {
   return (
     <div className="flex items-center gap-2">
+      <UserInfo />
       <button
         className="rounded-sm p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
         aria-label="Help"
