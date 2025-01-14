@@ -9,6 +9,7 @@
 - Logging: LogRocket (frontend), Winston (backend)
 - Infrastructure: Terraform, AWS EC2, Docker, Heroku
 - Environment Management: dotenvx for secure environment variable handling
+- CI/CD: GitHub Actions with automatic .env file setup from .env.example
 
 ## Authentication Implementation
 
@@ -681,23 +682,33 @@ Required Configuration:
 1. Message Model:
 
    - id: UUID
-   - content: Text
-   - sender: User relation
-   - channel: Channel relation
+   - content: String
+   - senderId: String (User relation)
+   - channelId: String (Channel relation)
+   - isEdited: Boolean
+   - isPinned: Boolean
    - createdAt: DateTime
    - updatedAt: DateTime
    - reactions: Reaction[] relation
-   - attachments: Attachment[] relation (future)
-   - isEdited: Boolean
-   - isPinned: Boolean
    - mentions: User[] relation
 
 2. Reaction Model:
+
    - id: UUID
    - emoji: String
-   - user: User relation
-   - message: Message relation
+   - userId: String (User relation)
+   - messageId: String (Message relation)
    - createdAt: DateTime
+   - Unique constraint on [userId, messageId, emoji]
+   - Indexes on userId and messageId
+
+3. Updated Relations:
+   - User model:
+     - messages: Message[] (sent messages)
+     - reactions: Reaction[] (message reactions)
+     - mentions: Message[] (messages mentioning user)
+   - Channel model:
+     - messages: Message[] (channel messages)
 
 ### WebSocket Implementation Plan
 
@@ -868,6 +879,8 @@ Required Configuration:
    - General channel created by default in both main and test databases
    - All users automatically added to general channel on registration/login
    - Channel membership tracked in database through many-to-many relationship
+   - Channel routing uses IDs instead of names for consistency and reliability
+   - Channel names still displayed in UI but not used for routing
 
 2. Database Seeding:
    - Main database (chatgenius):
@@ -912,3 +925,199 @@ Required Configuration:
    - Creates general channel in both databases
    - Connects all users to general channel
    - Test database includes sample users of each type
+
+## Real-time Messaging Implementation - IN PROGRESS
+
+### Database Schema - COMPLETED
+
+1. Message Model:
+
+   - id: UUID
+   - content: String
+   - senderId: String (User relation)
+   - channelId: String (Channel relation)
+   - isEdited: Boolean
+   - isPinned: Boolean
+   - createdAt: DateTime
+   - updatedAt: DateTime
+   - reactions: Reaction[] relation
+   - mentions: User[] relation
+   - Indexes on senderId, channelId, and createdAt
+
+2. Reaction Model:
+
+   - id: UUID
+   - emoji: String
+   - userId: String (User relation)
+   - messageId: String (Message relation)
+   - createdAt: DateTime
+   - Unique constraint on [userId, messageId, emoji]
+   - Indexes on userId and messageId
+
+3. Updated Relations:
+   - User model:
+     - messages: Message[] (sent messages)
+     - reactions: Reaction[] (message reactions)
+     - mentions: Message[] (messages mentioning user)
+   - Channel model:
+     - messages: Message[] (channel messages)
+
+### API Implementation - COMPLETED
+
+1. Message Endpoints:
+
+   - GET /api/channels/:channelId/messages - Get channel messages with pagination
+   - POST /api/channels/:channelId/messages - Send new message
+   - PUT /api/messages/:messageId - Edit message
+   - DELETE /api/messages/:messageId - Delete message
+   - POST /api/messages/:messageId/reactions - Add reaction
+   - DELETE /api/messages/:messageId/reactions/:reactionId - Remove reaction
+
+2. Features:
+   - Pagination support with cursor-based pagination
+   - Message mentions with @ symbol
+   - Reaction management with unique constraints
+   - Proper error handling and logging
+   - Automatic mention extraction from content
+
+### WebSocket Implementation - COMPLETED
+
+1. Socket.IO Setup:
+
+   - Namespace: /chat (default)
+   - Authentication via JWT
+   - CORS configuration matching REST API
+   - Room per channel (`channel:${channelId}`)
+   - Connection state management
+   - Automatic channel joining on connection
+
+2. Events:
+
+   - message:send - Send new message
+   - message:received - Broadcast new message
+   - message:reaction - Add/remove reaction
+   - message:reaction:added - Broadcast new reaction
+   - message:reaction:removed - Broadcast removed reaction
+   - user:typing - Typing indicator
+   - user:online - User connection status
+   - user:offline - User disconnection status
+   - user:mentioned - Mention notification
+
+3. Features:
+   - Real-time message delivery
+   - Typing indicators
+   - Online presence tracking
+   - Multi-device support per user
+   - Automatic channel room management
+   - Last seen tracking
+   - Mention notifications
+   - Reaction synchronization
+
+### Next Steps:
+
+1. Frontend Implementation:
+
+   - Message list component
+   - Message composer
+   - Real-time updates integration
+   - Typing indicator UI
+   - Reaction picker
+   - Mention suggestions
+
+2. Testing:
+
+   - WebSocket connection tests
+   - Message flow integration tests
+   - Reaction handling tests
+   - Presence tracking tests
+
+3. Performance Optimization:
+   - Message batching
+   - Pagination implementation
+   - Connection pooling
+   - Error recovery
+   - Reconnection handling
+
+## Database Management
+
+### Migration Commands
+
+1. Production Database:
+
+   ```bash
+   cd server && npm run prisma:migrate:prod    # Run migrations (safe deploy)
+   cd server && npm run prisma:studio:prod     # View/edit data
+   cd server && npm run db:seed:prod           # Seed data
+   ```
+
+2. Development Database (chatgenius):
+
+   ```bash
+   cd server && npm run prisma:migrate:dev     # Run migrations
+   cd server && npm run prisma:studio:dev      # View/edit data
+   cd server && npm run db:seed:dev            # Seed data
+   ```
+
+3. Test Database (chatgenius_test):
+
+   ```bash
+   cd server && npm run prisma:migrate:test    # Run migrations
+   cd server && npm run prisma:studio:test     # View/edit data
+   cd server && npm run db:seed:test           # Seed test data
+   ```
+
+4. Environment Configuration:
+   - Production uses .env
+   - Development uses .env.development
+   - Test uses .env.test
+   - Each command explicitly states which database it's targeting
+   - Migrations are tracked separately for each database
+   - Production uses `migrate deploy` for safety (no reset)
+   - Development/Test use `migrate dev` for schema changes
+
+## Channel Routing and Navigation
+
+- Channel routing now uses IDs instead of names for consistency and reliability
+- Channel names are still displayed in the UI for user-friendliness
+- The general channel (ID: 25268248-51d1-42d8-9e3e-73308ffa30d3) is used as a fallback
+- Components handle channel navigation:
+  - ChannelsList: Finds and sets general channel as active if no channel is selected
+  - MessagesContainer: Attempts to fetch requested channel by ID, falls back to general channel if not found
+- Channel membership is tracked in the database through a many-to-many relationship
+- All users are automatically added to the general channel on registration/login
+
+## Message Display Implementation
+
+- MessageList component fetches messages from `/api/channels/:channelId/messages` endpoint
+- Messages are grouped by date with date dividers
+- Each message displays:
+  - User avatar (with initials fallback)
+  - Username
+  - Timestamp
+  - Message content
+  - Reactions (if any)
+  - Quick reaction buttons on hover
+- Loading states and error handling implemented
+- PropTypes validation added for type safety
+
+## Next Steps
+
+- Implement WebSocket integration for real-time message updates
+- Add message editing and deletion functionality
+- Implement reaction handling through WebSocket
+- Add typing indicators
+- Add message threading support
+- Add file upload support
+- Add message search functionality
+
+## Utility Functions
+
+### Text Utilities (`src/lib/text.js`)
+
+1. `getInitials(name: string): string`
+   - Extracts initials from user names for avatar fallbacks
+   - Supports Western names: "John Doe" -> "JD"
+   - Supports CJK characters: "李 小龙" -> "李小"
+   - Handles separators (spaces, hyphens, underscores)
+   - Returns uppercase initials (max 2 characters)
+   - Used by Message component for avatar fallbacks

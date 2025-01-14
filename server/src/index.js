@@ -6,6 +6,8 @@ import { PrismaClient } from '@prisma/client';
 import logger from './config/logger.js';
 import authRoutes from './routes/auth.js';
 import channelsRoutes from './routes/channels.js';
+import messagesRoutes from './routes/messages.js';
+import { setupWebSocketServer } from './socket/index.js';
 
 logger.info('📊 Server configuration:', { 
   nodeEnv: process.env.NODE_ENV,
@@ -88,6 +90,7 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/channels', channelsRoutes);
+app.use('/api', messagesRoutes); // Mount messages routes at /api
 
 // Health check route
 app.get('/api/health', async (req, res) => {
@@ -174,6 +177,10 @@ let isShuttingDown = false;
 const server = app.listen(port, () => {
   logger.info('Server running', { port });
 });
+
+// Set up WebSocket server
+export const io = setupWebSocketServer(server);
+logger.info('WebSocket server initialized');
 
 // Handle uncaught exceptions
 process.on('uncaughtException', async (error) => {

@@ -41,6 +41,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Copy environment files
+        run: |
+          cp client/.env.example client/.env
+          cp server/.env.example server/.env
+
       - name: Install dependencies
         run: npm run install:all
 

@@ -37,10 +37,10 @@ router.get('/', authenticateJWT, async (req, res) => {
 });
 
 // Get a specific channel
-router.get('/:name', authenticateJWT, async (req, res) => {
+router.get('/:id', authenticateJWT, async (req, res) => {
   try {
     const channel = await prisma.channel.findUnique({
-      where: { name: req.params.name },
+      where: { id: req.params.id },
       include: {
         members: {
           select: {
@@ -53,28 +53,28 @@ router.get('/:name', authenticateJWT, async (req, res) => {
     });
 
     if (!channel) {
-      logger.warn('Channel not found:', { channelName: req.params.name });
+      logger.warn('Channel not found:', { channelId: req.params.id });
       return res.status(404).json({ error: 'Channel not found' });
     }
 
     if (channel.isPrivate && !channel.members.some(member => member.id === req.user.id)) {
       logger.warn('Unauthorized channel access attempt:', { 
         userId: req.user.id, 
-        channelName: req.params.name 
+        channelId: req.params.id 
       });
       return res.status(403).json({ error: 'Not authorized to view this channel' });
     }
 
     logger.info('Channel fetched successfully', { 
       userId: req.user.id, 
-      channelName: channel.name 
+      channelId: channel.id 
     });
     res.json({ channel });
   } catch (error) {
     logger.error('Error fetching channel:', { 
       error: error.message, 
       userId: req.user.id,
-      channelName: req.params.name 
+      channelId: req.params.id 
     });
     res.status(500).json({ error: 'Failed to fetch channel' });
   }

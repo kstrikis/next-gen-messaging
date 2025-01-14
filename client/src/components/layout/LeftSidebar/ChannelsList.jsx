@@ -26,6 +26,13 @@ export default function ChannelsList() {
           headers: { Authorization: `Bearer ${token}` }
         });
         setChannels(response.data.channels);
+
+        // Find general channel and set it as active if no active channel
+        const generalChannel = response.data.channels.find(c => c.name === 'general');
+        if (generalChannel && !activeChannel) {
+          setActiveChannel(generalChannel.id);
+          router.push(`/channel/${generalChannel.id}`);
+        }
       } catch (error) {
         logger.error('Failed to fetch channels:', error.response?.data?.error || error.message);
       }
@@ -35,8 +42,8 @@ export default function ChannelsList() {
   }, []);
 
   const handleChannelClick = (channel) => {
-    setActiveChannel(channel.name);
-    router.push(`/channel/${channel.name}`);
+    setActiveChannel(channel.id);
+    router.push(`/channel/${channel.id}`);
   };
 
   return (
@@ -47,7 +54,7 @@ export default function ChannelsList() {
           variant="ghost"
           className={cn(
             'w-full justify-start gap-2',
-            activeChannel === channel.name && 'bg-accent'
+            activeChannel === channel.id && 'bg-accent'
           )}
           onClick={() => handleChannelClick(channel)}
         >
