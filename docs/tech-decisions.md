@@ -434,3 +434,72 @@ This document outlines the key technical decisions made for the ChatGenius proje
 - Socket.IO for real-time communication
 - Separate WebSocket server
 - Authentication handled through JWT tokens
+
+## Real-time Messaging Architecture
+
+1. **WebSocket Technology**
+
+   - Socket.IO for real-time communication
+     - Built-in reconnection handling
+     - Room-based channel management
+     - Binary data support
+     - Automatic fallback to polling
+     - Client presence detection
+     - Server-side events
+     - Middleware support
+     - Namespace organization
+
+2. **Message Storage**
+
+   - PostgreSQL for persistence
+     - JSONB for rich message content
+     - Full-text search capability
+     - Efficient indexing
+     - Transaction support
+     - Referential integrity
+     - Concurrent access
+     - Message archival
+     - Backup strategy
+
+3. **Message Delivery**
+
+   - Optimistic UI updates
+   - Message queuing
+   - Delivery receipts
+   - Offline support
+   - Message ordering
+   - Conflict resolution
+   - Rate limiting
+   - Error handling
+
+4. **Performance Optimization**
+
+   - Message batching
+   - Pagination strategy
+   - Cache management
+   - Connection pooling
+   - Query optimization
+   - Index management
+   - Load balancing
+   - Resource limits
+
+5. **Security Considerations**
+
+   - Input validation
+   - Content sanitization
+   - Rate limiting
+   - Permission checks
+   - Encryption
+   - XSS prevention
+   - CSRF protection
+   - Audit logging
+
+6. **Monitoring & Metrics**
+   - Message delivery rates
+   - System performance
+   - Error tracking
+   - User engagement
+   - Resource usage
+   - API latency
+   - Socket health
+   - Database load
