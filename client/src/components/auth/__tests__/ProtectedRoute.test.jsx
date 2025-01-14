@@ -1,22 +1,27 @@
 import { render, screen } from '@testing-library/react';
 import { useAuth0 } from '@auth0/auth0-react';
-import { useRouter } from 'next/router';
 import ProtectedRoute from '../ProtectedRoute';
 
 // Mock the modules
 jest.mock('@auth0/auth0-react');
-jest.mock('next/router', () => ({
-  useRouter: jest.fn()
+
+// Mock next/navigation
+const mockPush = jest.fn();
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+    replace: jest.fn(),
+    back: jest.fn(),
+    forward: jest.fn(),
+    refresh: jest.fn(),
+    prefetch: jest.fn()
+  })
 }));
 
 describe('ProtectedRoute', () => {
-  const mockPush = jest.fn();
-  
   beforeEach(() => {
-    useRouter.mockImplementation(() => ({
-      push: mockPush
-    }));
     localStorage.clear();
+    mockPush.mockClear();
   });
 
   it('shows loading state when auth is loading', () => {
@@ -47,6 +52,7 @@ describe('ProtectedRoute', () => {
 
     render(<ProtectedRoute>Test Content</ProtectedRoute>);
     expect(screen.getByText('Test Content')).toBeInTheDocument();
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it('shows content when has guest token', () => {
@@ -58,5 +64,6 @@ describe('ProtectedRoute', () => {
     localStorage.setItem('token', 'test-token');
     render(<ProtectedRoute>Test Content</ProtectedRoute>);
     expect(screen.getByText('Test Content')).toBeInTheDocument();
+    expect(mockPush).not.toHaveBeenCalled();
   });
 }); 
