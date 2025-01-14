@@ -1,82 +1,78 @@
-import LogRocket from 'logrocket';
+const isDevelopment = process.env.NODE_ENV === 'development';
 
-// Only initialize LogRocket in production
-const isTest = typeof window !== 'undefined' && window.Cypress;
-const isDev = process.env.NODE_ENV === 'development';
-
-if (!isTest && !isDev) {
-  LogRocket.init('chatgenius/prod', {
-    console: {
-      shouldAggregateConsoleErrors: true,
-      isEnabled: true,
-      methods: ['error', 'warn', 'info'],
-    },
-  });
-}
-
-// Helper to log both to console and LogRocket
-const createLogger = (level) => (...args) => {
-  // In test environment, use console directly for Cypress interception
-  if (isTest) {
-    // Skip debug logs in test environment
-    if (level === 'debug') return;
-    
-    // Ensure args are stringified for Cypress
-    const processedArgs = args.map(arg => 
-      typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-    );
-    // eslint-disable-next-line no-console
-    console.log(`[${level}]`, ...processedArgs);
-    return;
-  }
-
-  // Development: console only
-  if (isDev) {
-    // Skip debug logs in development
-    if (level === 'debug') return;
-    // eslint-disable-next-line no-console
-    console.log(`[${level}]`, ...args);
-    return;
-  }
-
-  // Production: both console and LogRocket
-  // eslint-disable-next-line no-console
-  console.log(`[${level}]`, ...args);
-  LogRocket.track(level, { message: args.join(' ') });
-};
-
-// Export a simple logger interface with all allowed methods
 const logger = {
-  // Direct logging methods
-  error: createLogger('error'),
-  warn: createLogger('warn'),
-  info: createLogger('info'),
-  debug: createLogger('debug'),
-  state: createLogger('state'),
-  perf: createLogger('perf'),
-  flow: createLogger('flow'),
-  feature: createLogger('feature'),
-
-  // Helper methods
-  trackFlow: (flowName, data) => {
-    const logger = createLogger('flow');
-    logger(`Flow: ${flowName}`, data);
+  error: (message, ...args) => {
+    if (isDevelopment) {
+      console.error(`[ERROR] ${message}`, ...args);
+    }
+    // In production, we could send this to LogRocket or another service
+    if (process.env.NEXT_PUBLIC_LOGROCKET_APP_ID) {
+      // LogRocket.captureException(args[0]);
+    }
   },
 
-  measurePerf: (label, duration) => {
-    const logger = createLogger('perf');
-    logger(`Performance: ${label}`, { duration });
+  warn: (message, ...args) => {
+    if (isDevelopment) {
+      console.warn(`[WARN] ${message}`, ...args);
+    }
   },
 
-  trackState: (component, state) => {
-    const logger = createLogger('state');
-    logger(`State Change: ${component}`, state);
-  }
+  info: (message, ...args) => {
+    if (isDevelopment) {
+      console.info(`[INFO] ${message}`, ...args);
+    }
+  },
+
+  debug: (message, ...args) => {
+    if (isDevelopment) {
+      console.debug(`[DEBUG] ${message}`, ...args);
+    }
+  },
+
+  state: (message, ...args) => {
+    if (isDevelopment) {
+      console.log(`[STATE] ${message}`, ...args);
+    }
+  },
+
+  perf: (message, ...args) => {
+    if (isDevelopment) {
+      console.log(`[PERF] ${message}`, ...args);
+    }
+  },
+
+  flow: (message, ...args) => {
+    if (isDevelopment) {
+      console.log(`[FLOW] ${message}`, ...args);
+    }
+  },
+
+  feature: (message, ...args) => {
+    if (isDevelopment) {
+      console.log(`[FEATURE] ${message}`, ...args);
+    }
+  },
+
+  startFeature: (featureName) => {
+    if (isDevelopment) {
+      console.group(`[FEATURE] ${featureName}`);
+    }
+    return {
+      step: (stepName, data) => logger.feature(`↪️ ${featureName} - ${stepName}`, data),
+      complete: (data) => {
+        logger.feature(`✅ Completed: ${featureName}`, data);
+        if (isDevelopment) {
+          console.groupEnd();
+        }
+      },
+      fail: (error) => {
+        logger.error(`❌ Failed: ${featureName}`, error);
+        if (isDevelopment) {
+          console.groupEnd();
+        }
+      },
+    };
+  },
 };
-
-// Expose logger to window in test environment
-if (isTest && typeof window !== 'undefined') {
-  window.logger = logger;
-}
 
 export default logger; 

@@ -375,3 +375,62 @@ This document outlines the key technical decisions made for the ChatGenius proje
    - Code splitting
    - Service worker
    - Asset optimization
+
+## Authentication
+
+- Using Auth0 for authentication
+  - Single Page Application type
+  - Authorization Code flow with PKCE
+  - Token Endpoint Authentication Method: None
+  - No audience parameter for regular authentication
+  - Local storage for token caching
+  - Debug tools at `/debug/auth` for configuration verification
+  - JWT tokens for API access
+  - User profile sync with local database
+  - Email verification support planned
+  - Role-based access control planned
+
+## Environment Configuration
+
+- Using dotenvx for environment variable management
+  - Separate .env files for development, test, and production
+  - Environment-specific files loaded based on script context
+  - Separate configurations for client and server
+
+## Database
+
+- Using PostgreSQL with Prisma
+  - Type-safe database access
+  - Easy schema management
+  - Built-in migrations
+
+## API
+
+- RESTful API design
+- Version prefix: /api/v1
+- Rate limiting implemented
+- JWT authentication for protected routes
+
+## Testing
+
+- Jest for unit and integration tests
+- Separate test database with its own schema
+- Test data seeding for consistent test environment
+
+## Logging
+
+- Winston for server-side logging
+- Structured logging format
+- Different log levels for development and production
+
+## Frontend
+
+- Next.js for React framework
+- Client-side state management with React hooks
+- Tailwind CSS for styling
+
+## WebSocket
+
+- Socket.IO for real-time communication
+- Separate WebSocket server
+- Authentication handled through JWT tokens

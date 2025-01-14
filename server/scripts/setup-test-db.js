@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import logger from '../src/config/logger.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.join(__dirname, '..');
 
 // Log environment before loading test config
 logger.info('📝 Environment before loading test config:', {
@@ -16,13 +17,13 @@ logger.info('📝 Environment before loading test config:', {
 
 // Load test environment variables
 logger.info('📝 Loading test environment configuration...');
-dotenv.config({ path: path.join(__dirname, '../.env.test') });
+dotenv.config({ path: path.join(projectRoot, '.env.test') });
 
 // Log environment after loading test config
 logger.info('🔍 Environment after loading test config:', {
   NODE_ENV: process.env.NODE_ENV,
   DATABASE_URL: process.env.DATABASE_URL,
-  envFile: path.join(__dirname, '../.env.test')
+  envFile: path.join(projectRoot, '.env.test')
 });
 
 const prisma = new PrismaClient();
@@ -40,8 +41,11 @@ async function setupTestDb() {
     logger.info('✓ Created test database');
 
     logger.info('🔄 Running migrations...');
-    // Run migrations
-    execSync('cd .. && NODE_ENV=test npx prisma migrate deploy', { cwd: __dirname });
+    // Run migrations using the test database URL
+    execSync('DATABASE_URL=postgresql://postgres:postgres@localhost:5432/chatgenius_test npx prisma migrate deploy', {
+      stdio: 'inherit',
+      cwd: projectRoot
+    });
     logger.info('✓ Applied migrations');
 
     // Verify database connection
@@ -49,9 +53,13 @@ async function setupTestDb() {
     const url = await prisma.$queryRaw`SELECT current_database()`;
     logger.info('✓ Connected to database:', url);
 
-    // Clean up any test data
-    await prisma.$executeRaw`TRUNCATE TABLE "users" CASCADE;`;
-    logger.info('✓ Cleaned up test data');
+    logger.info('🌱 Seeding test data...');
+    // Run the test seeder
+    execSync('DATABASE_URL=postgresql://postgres:postgres@localhost:5432/chatgenius_test node prisma/seed-test.js', {
+      stdio: 'inherit',
+      cwd: projectRoot
+    });
+    logger.info('✓ Seeded test data');
 
     logger.info('✨ Test database setup complete!');
   } catch (error) {

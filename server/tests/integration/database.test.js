@@ -3,54 +3,38 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 describe('Database Connection', () => {
+  beforeAll(async () => {
+    // Clean up any existing test data
+    await prisma.user.deleteMany({
+      where: {
+        email: 'test@example.com'
+      }
+    });
+  });
+
   afterAll(async () => {
     await prisma.$disconnect();
   });
 
-  it('should connect to the database', async () => {
-    try {
-      // Try to query the database
-      await prisma.$queryRaw`SELECT 1`;
-      expect(true).toBe(true); // If we get here, the connection worked
-    } catch (error) {
-      throw new Error('Database connection failed: ' + error.message);
-    }
-  });
-
   it('should be able to create and query users', async () => {
-    const testUser = {
-      email: 'test@example.com',
-      username: 'testuser',
-      passwordHash: 'hashedpassword123'
-    };
-
     try {
-      // Clean up any existing test user
-      await prisma.user.deleteMany({
-        where: {
-          OR: [
-            { email: testUser.email },
-            { username: testUser.username }
-          ]
-        }
-      });
-
       // Create a test user
       const created = await prisma.user.create({
-        data: testUser,
-        select: {
-          id: true,
-          email: true,
-          username: true,
-          passwordHash: true,
-          createdAt: true,
-          updatedAt: true
+        data: {
+          email: 'test@example.com',
+          username: 'testuser',
+          passwordHash: 'hashedpassword',
+          auth0Id: null,
+          isGuest: false
         }
       });
 
-      expect(created.email).toBe(testUser.email);
-      expect(created.username).toBe(testUser.username);
-      expect(created.passwordHash).toBe(testUser.passwordHash);
+      // Verify created user
+      expect(created.email).toBe('test@example.com');
+      expect(created.username).toBe('testuser');
+      expect(created.passwordHash).toBe('hashedpassword');
+      expect(created.isGuest).toBe(false);
+      expect(created.auth0Id).toBeNull();
       expect(created.id).toBeDefined();
       expect(created.createdAt instanceof Date).toBe(true);
       expect(created.updatedAt instanceof Date).toBe(true);

@@ -1,23 +1,63 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
+import { useToast } from '@/hooks/use-toast';
+import logger from '@/lib/logger';
 
 export default function ProtectedRoute({ children }) {
-  const { isAuthenticated, isLoading } = useAuth0();
+  const { isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
   const router = useRouter();
+  const { toast } = useToast();
+  const [isTokenExchanged, setIsTokenExchanged] = useState(false);
 
   useEffect(() => {
+    const exchangeToken = async () => {
+      try {
+        // If authenticated with Auth0, exchange token
+        if (isAuthenticated) {
+          logger.info('Starting token exchange...');
+          const token = await getAccessTokenSilently();
+          
+          const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/auth/auth0/callback`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            }
+          );
+
+          logger.info('Token exchange successful');
+          localStorage.setItem('token', response.data.token);
+          setIsTokenExchanged(true);
+        }
+      } catch (error) {
+        logger.error('Token exchange error:', error);
+        toast({
+          title: 'Authentication Error',
+          description: 'Failed to authenticate with the server. Please try again.',
+          variant: 'destructive'
+        });
+        router.push('/');
+      }
+    };
+
     // Check for token from guest login
     const token = localStorage.getItem('token');
     
-    if (!isLoading && !isAuthenticated && !token) {
-      router.push('/');
+    if (!isLoading) {
+      if (isAuthenticated && !isTokenExchanged) {
+        exchangeToken();
+      } else if (!token) {
+        router.push('/');
+      }
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, router, getAccessTokenSilently, toast, isTokenExchanged]);
 
-  if (isLoading) {
+  if (isLoading || (isAuthenticated && !isTokenExchanged)) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div 

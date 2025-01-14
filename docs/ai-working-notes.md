@@ -20,6 +20,7 @@
    - Loading states with accessibility support
    - Seamless transition between guest and Auth0 auth
    - Username display in channel header
+   - LogoutButton component handling both Auth0 and guest logout
 
 2. Auth Flow:
 
@@ -32,7 +33,11 @@
      - Preserves underscores in usernames
      - Name length truncation (max 50 chars + prefix)
      - Invalid character cleaning
-   - Auth0 users: Click "Sign in with Auth0" -> Auth0 redirect -> Callback -> App
+   - Auth0 users:
+     - Click "Sign in with Auth0" -> Auth0 redirect -> Callback -> App
+     - Automatic user creation/update on first login
+     - Email and name synced from Auth0 profile
+     - Secure JWT validation using JWKS
    - Token storage in localStorage
    - Automatic redirect to /channel/general when authenticated
    - Protected routes check both Auth0 and guest tokens
@@ -64,16 +69,25 @@
      - Web Origins: http://localhost:3000
    - API identifier: https://api.chatgenius.com
    - Environment variables in .env.development
+   - Backend integration:
+     - JWKS validation for Auth0 tokens
+     - User creation/update on login
+     - Auth0 ID stored in database
+     - Profile sync on each login
 
 5. Routes:
 
    - POST /api/auth/guest - Guest access with automatic unique naming
    - GET /api/auth/me - Get current user info
+   - GET /api/auth/auth0/callback - Handle Auth0 authentication
    - Auth0 handles regular user authentication
 
 6. User Types:
 
-   - Regular Users: Full Auth0 authentication
+   - Regular Users:
+     - Full Auth0 authentication
+     - Profile synced from Auth0
+     - Unique auth0Id in database
    - Guest Users:
      - Optional username input
      - Automatic unique name generation
@@ -83,18 +97,26 @@
 
 7. JWT Implementation:
 
-   - Tokens include userId and isGuest flag
-   - 24-hour expiration
-   - Environment-specific secrets
+   - Guest tokens:
+     - Include userId and isGuest flag
+     - 24-hour expiration
+     - Environment-specific secrets
+   - Auth0 tokens:
+     - RS256 algorithm
+     - JWKS validation
+     - Standard claims validation
+     - Audience and issuer verification
 
 8. Security Features:
-   - Password hashing with bcrypt
+   - Password hashing with bcrypt (for guest users)
    - Unique email and username constraints
    - Input validation and sanitization
    - Guest vs regular user access control
    - Auth0 for secure authentication
    - Control character filtering
    - Name length limits
+   - JWKS key rotation support
+   - Rate limiting on auth endpoints
 
 ## Infrastructure Configuration
 
@@ -491,11 +513,60 @@ Required Configuration:
    - Protected routes with authentication check
    - Automatic redirect to login
 
-## Auth0 Configuration
+## Auth0 Configuration - WORKING SETUP
 
-- Domain: your-tenant.auth0.com
-- Audience: https://api.chatgenius.com
-- Client ID: your-client-id
+### Application Settings
+
+1. Application Type: Single Page Application
+2. Token Endpoint Authentication Method: None (changed from POST)
+3. Required URLs:
+   - Allowed Callback URLs: http://localhost:3000/callback
+   - Allowed Web Origins: http://localhost:3000
+   - Allowed Logout URLs: http://localhost:3000
+4. Grant Types:
+   - Authorization Code
+   - Refresh Token
+
+### Client Configuration
+
+```jsx
+<Auth0Provider
+  domain="dev-szo6eu726ws4ythd.us.auth0.com"
+  clientId="qfxIKGUBcnLL399HWAUHbDOSXOSG31ga"
+  authorizationParams={{
+    redirect_uri: typeof window !== 'undefined' ? `${window.location.origin}/callback` : undefined,
+    scope: 'openid profile email',
+  }}
+  cacheLocation="localstorage"
+>
+  {children}
+</Auth0Provider>
+```
+
+### Key Configuration Points
+
+1. No audience parameter needed
+2. Token Endpoint Authentication Method must be "None"
+3. Using localstorage for token caching
+4. Authorization Code flow with PKCE working correctly
+
+### User Profile Data Available
+
+- nickname
+- name
+- picture (Gravatar)
+- email
+- email_verified
+- sub (Auth0 user ID)
+- updated_at
+
+### Debug Tools
+
+- `/debug/auth` page working correctly
+- Shows environment config
+- Displays Auth0 context state
+- Confirms token acquisition
+- Provides user information
 
 ## API Endpoints
 
@@ -517,3 +588,130 @@ Required Configuration:
    - Automatically loaded at start of npm scripts
    - Environment-specific files loaded based on script context
    - Separate configurations for client and server
+
+## Auth0 Integration Issues and Solutions
+
+### Configuration Issues Found
+
+- Initial 401 Unauthorized errors were caused by incorrect audience configuration
+- Using Management API audience (`https://dev-szo6eu726ws4ythd.us.auth0.com/api/v2/`) for user authentication was incorrect
+- Missing proper Auth0 application settings in dashboard caused authentication flow issues
+
+### Required Auth0 Application Settings
+
+1. Application Type must be "Single Page Application"
+2. Token Endpoint Authentication Method should be "None"
+3. Required URLs must be configured:
+   - Allowed Callback URLs: `http://localhost:3000/callback`
+   - Allowed Web Origins: `http://localhost:3000`
+   - Allowed Logout URLs: `http://localhost:3000`
+4. Grant Types must include:
+   - Authorization Code
+   - Refresh Token
+
+### Auth0Provider Configuration
+
+```jsx
+<Auth0Provider
+  domain={process.env.NEXT_PUBLIC_AUTH0_DOMAIN}
+  clientId={process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID}
+  authorizationParams={{
+    redirect_uri: typeof window !== 'undefined' ? `${window.location.origin}/callback` : '',
+    scope: 'openid profile email',
+    response_type: 'code',
+  }}
+  cacheLocation="localstorage"
+  onRedirectCallback={appState => {
+    window.location.href = appState?.returnTo || '/channel/general';
+  }}
+>
+  {children}
+</Auth0Provider>
+```
+
+### Debugging Tools Created
+
+- Created `/debug/auth` page to diagnose Auth0 configuration and state
+- Debug page shows:
+  - Environment configuration
+  - Auth0 context state
+  - User information
+  - Token acquisition status
+  - Detailed error information
+
+### Key Learnings
+
+1. Don't use Management API audience for regular user authentication
+2. Always verify Auth0 dashboard settings match client configuration
+3. Use debug tools to verify configuration before proceeding with integration
+4. Monitor Auth0 logs in dashboard for detailed error information
+
+### TODO
+
+- [ ] Implement proper error handling for Auth0 authentication failures
+- [ ] Add logging for authentication events
+- [ ] Create user sync process between Auth0 and local database
+- [ ] Add refresh token handling
+- [ ] Implement proper logout flow
+
+## Authentication Flow
+
+- Auth0 integration using Authorization Code flow with PKCE
+- Client-side Auth0 configuration in client/.env.development:
+  - Domain: dev-szo6eu726ws4ythd.us.auth0.com
+  - Client ID: qfxIKGUBcnLL399HWAUHbDOSXOSG31ga
+  - No audience parameter needed for regular user authentication
+  - Response type: code
+  - Cache location: localstorage
+- Server-side Auth0 configuration in server/.env.development:
+  - Client secret required for token exchange
+  - Callback URL must match Auth0 dashboard settings
+  - JWT tokens generated after successful Auth0 authentication
+
+## Debug Tools
+
+- Auth0 debug page at /debug/auth
+- Shows current configuration and authentication state
+- Logs login attempts and errors
+- Helps verify Auth0 setup
+
+## Database Schema
+
+- User model includes:
+  - auth0Id (nullable for guest users)
+  - email
+  - username
+  - isGuest flag
+  - JWT token handling
+
+## Testing
+
+- Separate test database configuration
+- Test data seeding for consistent environment
+- Integration tests for auth flows
+- Mock Auth0 responses in test environment
+
+## Environment Setup
+
+- Development uses .env.development
+- Test uses .env.test
+- Production uses .env
+- Each environment has specific Auth0 configuration
+
+## Known Issues
+
+- 401 errors can occur if:
+  - Client secret is incorrect
+  - Audience is misconfigured
+  - Auth0 application settings don't match environment
+- Guest user flow separate from Auth0 authentication
+- Token exchange requires proper environment configuration
+
+## Next Steps
+
+- [ ] Implement user profile sync with local database
+- [ ] Add email verification handling
+- [ ] Set up proper error handling for auth failures
+- [ ] Add refresh token rotation
+- [ ] Implement secure logout flow
+- [ ] Add role-based access control

@@ -14,8 +14,13 @@ export default function RootLayout({ children }) {
           domain={process.env.NEXT_PUBLIC_AUTH0_DOMAIN}
           clientId={process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID}
           authorizationParams={{
-            redirect_uri: typeof window !== 'undefined' ? window.location.origin : '',
-            audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
+            redirect_uri: typeof window !== 'undefined' ? `${window.location.origin}/callback` : '',
+            scope: 'openid profile email',
+            response_type: 'code'
+          }}
+          cacheLocation="localstorage"
+          onRedirectCallback={(appState) => {
+            window.location.href = appState?.returnTo || '/channel/general';
           }}
         >
           {children}

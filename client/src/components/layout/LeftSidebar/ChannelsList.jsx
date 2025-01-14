@@ -1,22 +1,41 @@
 'use client';
 
 import { ChevronDown, ChevronRight, Hash, Lock, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-
-// Placeholder data - will be replaced with real data from API
-const channels = [
-  { id: 1, name: 'announcements', isPrivate: false, unread: false },
-  { id: 2, name: 'help', isPrivate: false, unread: true },
-  { id: 3, name: 'introductions', isPrivate: false, unread: false },
-  { id: 4, name: 'social', isPrivate: false, unread: false },
-  { id: 5, name: 'brainlifts', isPrivate: true, unread: true },
-];
+import axios from 'axios';
 
 export default function ChannelsList() {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [channels, setChannels] = useState([]);
+  const [error, setError] = useState(null);
   const pathname = usePathname();
+
+  useEffect(() => {
+    const fetchChannels = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/channels`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setChannels(response.data.channels);
+      } catch (err) {
+        console.error('Failed to fetch channels:', err);
+        setError(err.message);
+      }
+    };
+
+    fetchChannels();
+  }, []);
+
+  if (error) {
+    return (
+      <div className="py-2 px-4 text-sm text-red-500">
+        Error loading channels: {error}
+      </div>
+    );
+  }
 
   return (
     <div className="py-2">
@@ -38,11 +57,11 @@ export default function ChannelsList() {
       {isExpanded && (
         <div className="mt-1 space-y-[2px] px-2">
           {channels.map((channel) => {
-            const isActive = pathname === `/channel/${channel.id}`;
+            const isActive = pathname === `/channel/${channel.name}`;
             return (
               <Link
                 key={channel.id}
-                href={`/channel/${channel.id}`}
+                href={`/channel/${channel.name}`}
                 className={`group flex items-center gap-2 rounded-md px-2 py-1 text-sm ${
                   isActive
                     ? 'bg-accent text-accent-foreground'
@@ -54,9 +73,7 @@ export default function ChannelsList() {
                 ) : (
                   <Hash className="h-3 w-3" />
                 )}
-                <span className={channel.unread ? 'font-semibold' : ''}>
-                  {channel.name}
-                </span>
+                <span>{channel.name}</span>
               </Link>
             );
           })}

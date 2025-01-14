@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import { PrismaClient } from '@prisma/client';
 import logger from './config/logger.js';
 import authRoutes from './routes/auth.js';
+import channelsRoutes from './routes/channels.js';
 
 logger.info('📊 Server configuration:', { 
   nodeEnv: process.env.NODE_ENV,
@@ -18,7 +19,11 @@ const requiredEnvVars = [
   'DATABASE_URL',
   'NODE_ENV',
   'CORS_ORIGIN',
-  'JWT_SECRET'
+  'JWT_SECRET',
+  'AUTH0_DOMAIN',
+  'AUTH0_CLIENT_ID',
+  'AUTH0_CLIENT_SECRET',
+  'AUTH0_AUDIENCE'
 ];
 
 const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
@@ -36,8 +41,20 @@ logger.info('Server configuration:', {
   databaseUrl: process.env.DATABASE_URL ? 'Set' : 'Not set'
 });
 
+// CORS configuration
+const corsOptions = {
+  origin: [
+    process.env.CORS_ORIGIN,
+    `https://${process.env.AUTH0_DOMAIN}`
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  maxAge: 86400 // 24 hours
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(helmet());
 app.use(express.json());
 
@@ -52,8 +69,25 @@ try {
   prisma = null;
 }
 
+// Request logging middleware
+app.use((req, res, next) => {
+  logger.info('Incoming request:', { 
+    method: req.method,
+    path: req.path,
+    query: Object.keys(req.query).length ? JSON.stringify(req.query) : undefined,
+    body: req.method === 'POST' ? JSON.stringify(req.body) : undefined,
+    headers: {
+      'content-type': req.headers['content-type'],
+      'user-agent': req.headers['user-agent'],
+      'authorization': req.headers.authorization ? 'Bearer [redacted]' : undefined
+    }
+  });
+  next();
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/channels', channelsRoutes);
 
 // Health check route
 app.get('/api/health', async (req, res) => {
@@ -80,7 +114,7 @@ app.get('/api/health', async (req, res) => {
 });
 
 // User Management Context - only enabled if database is connected
-app.get('/api/users/profile', async (req, res, next) => {
+app.get('/api/users/profile', async (req, res) => {
   if (!prisma) {
     return res.status(503).json({ error: 'Database service unavailable' });
   }
@@ -96,7 +130,7 @@ app.get('/api/users/profile', async (req, res, next) => {
     res.json(users);
   } catch (error) {
     logger.error('Database query failed:', { error: error.message, stack: error.stack });
-    next(error);
+    return res.status(503).json({ error: 'Database query failed' });
   }
 });
 
@@ -223,4 +257,6 @@ process.on('exit', (code) => {
   }
   // Note: This is a synchronous event, async operations won't work here
   logger.info('Process exiting', { code });
-}); 
+});
+
+export default app; 
