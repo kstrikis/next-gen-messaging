@@ -11,7 +11,7 @@ export default defineConfig({
     supportFile: 'cypress/support/e2e.js',
     video: false,
     screenshotOnRunFailure: true,
-    defaultCommandTimeout: 10000,
+    defaultCommandTimeout: 2000,
     watchForFileChanges: false,
     experimentalRunAllSpecs: true,
     groups: {

@@ -1,6 +1,15 @@
 describe('Message Composer', () => {
   beforeEach(() => {
+    // Start at home page
     cy.visit('/');
+    
+    // Enter guest name and submit
+    cy.get('input[placeholder*="guest name"]').type('TestUser');
+    cy.get('button').contains('Join as Guest').click();
+    
+    // Should be redirected to /channel/general
+    cy.url().should('include', '/channel/general');
+    
     // Wait for component to be ready
     cy.get('textarea').should('exist');
   });

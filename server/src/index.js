@@ -1,28 +1,24 @@
+// Import modules
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { PrismaClient } from '@prisma/client';
-import 'dotenv/config';
 import logger from './config/logger.js';
+import authRoutes from './routes/auth.js';
 
-// Load environment-specific .env file
-const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : 
-                process.env.NODE_ENV === 'production' ? '.env' : 
-                '.env.development';
-
-logger.info('Loading environment configuration', { 
+logger.info('📊 Server configuration:', { 
   nodeEnv: process.env.NODE_ENV,
-  envFile,
   port: process.env.SERVER_PORT || 3001,
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
-  databaseUrl: process.env.DATABASE_URL ? 'Set' : 'Not set'
+  databaseUrl: process.env.DATABASE_URL
 });
 
 // Required environment variables
 const requiredEnvVars = [
   'DATABASE_URL',
   'NODE_ENV',
-  'CORS_ORIGIN'
+  'CORS_ORIGIN',
+  'JWT_SECRET'
 ];
 
 const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
@@ -56,13 +52,30 @@ try {
   prisma = null;
 }
 
+// Routes
+app.use('/api/auth', authRoutes);
+
 // Health check route
-app.get('/api/health', (req, res) => {
-  res.json({ 
+app.get('/api/health', async (req, res) => {
+  const databaseUrl = process.env.DATABASE_URL || 'unknown';
+  // Parse database name from URL, handling both standard and query param formats
+  const dbName = databaseUrl.match(/\/([^/?]+)(?:\?|$)/)?.[1] || 'unknown';
+  
+  let dbStatus = 'disconnected';
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    dbStatus = 'connected';
+  } catch (error) {
+    logger.error('Database health check failed:', { error: error.message });
+  }
+  
+  res.json({
     status: 'ok',
-    timestamp: new Date().toISOString(),
-    database: prisma ? 'connected' : 'disconnected',
-    uptime: process.uptime()
+    database: {
+      status: dbStatus,
+      name: dbName,
+      environment: process.env.NODE_ENV
+    }
   });
 });
 
