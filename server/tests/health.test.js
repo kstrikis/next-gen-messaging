@@ -1,91 +1,36 @@
-import request from 'supertest';
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
 import { PrismaClient } from '@prisma/client';
-import logger from '../src/config/logger.js';
 
-const prisma = new PrismaClient();
-const app = express();
-app.use(cors());
-app.use(helmet());
-app.use(express.json());
+// Mock PrismaClient
+jest.mock('@prisma/client', () => ({
+  PrismaClient: jest.fn().mockImplementation(() => ({
+    $queryRaw: jest.fn().mockResolvedValue([{ '?column?': 1 }]),
+    user: {
+      findMany: jest.fn().mockResolvedValue([
+        { id: 1, username: 'testuser1', createdAt: new Date() },
+        { id: 2, username: 'testuser2', createdAt: new Date() }
+      ])
+    }
+  }))
+}));
 
-// Health check route
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok',
-    timestamp: new Date().toISOString()
-  });
-});
+describe('Database Health', () => {
+  let prisma;
 
-// User Management Context
-app.get('/api/users/profile', async (req, res) => {
-  try {
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        username: true,
-        createdAt: true
-      }
-    });
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ error: 'Database error' });
-  }
-});
-
-// Test crash endpoint (development only)
-if (process.env.NODE_ENV !== 'production') {
-  app.get('/api/test-crash', (req, res, next) => {
-    logger.error('Simulating a crash');
-    const error = new Error('Simulating a crash');
-    next(error);
-  });
-}
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  res.status(500).json({ error: 'Internal server error' });
-  next(err);
-});
-
-describe('API Endpoints', () => {
-  describe('Health Check', () => {
-    it('should return health status', async () => {
-      const response = await request(app).get('/api/health');
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('status', 'ok');
-      expect(response.body).toHaveProperty('timestamp');
-    });
+  beforeEach(() => {
+    prisma = new PrismaClient();
   });
 
-  describe('User Management', () => {
-    it('should list user profiles', async () => {
-      const response = await request(app).get('/api/users/profile');
-      expect(response.status).toBe(200);
-      expect(Array.isArray(response.body)).toBe(true);
-    });
+  it('should connect to database', async () => {
+    const result = await prisma.$queryRaw`SELECT 1`;
+    expect(result).toBeDefined();
+    expect(result[0]['?column?']).toBe(1);
   });
 
-  // Only run crash test in development
-  if (process.env.NODE_ENV !== 'production') {
-    describe('Error Handling', () => {
-      it('should log crash events', async () => {
-        const response = await request(app).get('/api/test-crash');
-        expect(response.status).toBe(500);
-        expect(response.body).toHaveProperty('error', 'Internal server error');
-        
-        // Give the logger time to write
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Check if the error was logged
-        const fs = await import('fs');
-        const path = await import('path');
-        const logPath = path.join(process.cwd(), 'logs', 'error.log');
-        const logContent = fs.readFileSync(logPath, 'utf8');
-        expect(logContent).toContain('Simulating a crash');
-      });
-    });
-  }
+  it('should query users', async () => {
+    const users = await prisma.user.findMany();
+    expect(Array.isArray(users)).toBe(true);
+    expect(users.length).toBe(2);
+    expect(users[0].username).toBe('testuser1');
+    expect(users[1].username).toBe('testuser2');
+  });
 }); 

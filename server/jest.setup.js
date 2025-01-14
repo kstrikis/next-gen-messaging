@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '.env.test' });
 
 // Increase timeout for tests
-jest.setTimeout(10000);
+jest.setTimeout(2000);
 
 // Mock console.error and console.warn to keep test output clean
 global.console.error = jest.fn();

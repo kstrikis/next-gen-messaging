@@ -7,16 +7,20 @@
     "test": "tests"
   },
   "scripts": {
-    "dev": "NODE_ENV=development NODE_OPTIONS='--no-deprecation --disable-warning=ExperimentalWarning' nodemon src/index.js -p ${SERVER_PORT:-3001}",
-    "start": "echo \"Starting server...\" && NODE_ENV=production node src/index.js -p ${SERVER_PORT:-3001}",
-    "test": "NODE_ENV=test jest",
-    "test:watch": "NODE_ENV=test jest --watch",
-    "test:coverage": "NODE_ENV=test jest --coverage",
-    "test:integration": "NODE_ENV=test jest --config jest.integration.config.js",
+    "dev": "dotenvx run --env-file=.env.development -- sh -c 'NODE_OPTIONS=\"--no-deprecation --disable-warning=ExperimentalWarning\" nodemon src/index.js -p ${SERVER_PORT:-3001}'",
+    "start": "dotenvx run --env-file=.env -- echo \"Starting server...\" && node src/index.js -p ${SERVER_PORT:-3001}",
+    "start:test": "dotenvx run --env-file=.env.test -- echo \"🔍 Environment variables:\" && printenv | grep -E 'NODE_ENV|DATABASE_URL' && echo \"🔧 Setting up test database...\" && node scripts/setup-test-db.js && echo \"🚀 Starting server with test configuration...\" && NODE_OPTIONS='--no-deprecation --disable-warning=ExperimentalWarning' nodemon src/index.js -p ${SERVER_PORT:-3001}",
+    "debug:env": "echo \"Server Before dotenvx:\" && printenv | grep -E 'NODE_ENV|DATABASE_URL' && echo \"\nServer After dotenvx:\" && dotenvx run --env-file=.env.test -- printenv | grep -E 'NODE_ENV|DATABASE_URL' && echo \"\nServer Node Process:\" && dotenvx run --env-file=.env.test -- node -e \"console.log('NODE_ENV=' + process.env.NODE_ENV)\" && echo \"\nServer Nodemon Process:\" && dotenvx run --env-file=.env.test -- nodemon --exitcrash --exec \"node -e \\\"console.log('NODE_ENV=' + process.env.NODE_ENV)\\\"\"",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:integration": "jest --config jest.integration.config.js",
     "build": "echo 'No build step required for server'",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
+    "db:seed": "dotenvx run --env-file=.env -- node prisma/seed.js",
+    "db:seed:test": "dotenvx run --env-file=.env.test -- node prisma/seed-test.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{js,jsx,json,md}\""
@@ -26,15 +30,21 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@dotenvx/dotenvx": "^1.33.0",
     "@prisma/client": "^6.2.1",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "express-jwt": "^8.5.1",
     "express-rate-limit": "^7.5.0",
     "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "jwks-rsa": "^3.1.0",
+    "node-fetch": "^3.3.2",
     "nodemon": "^3.1.9",
     "prisma": "^6.2.1",
     "socket.io": "^4.8.1",
+    "uuid": "^11.0.5",
     "winston": "^3.17.0"
   },
   "devDependencies": {
@@ -44,5 +54,8 @@
     "jest": "^29.7.0",
     "jest-environment-node": "^29.7.0",
     "supertest": "^7.0.0"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   }
 }

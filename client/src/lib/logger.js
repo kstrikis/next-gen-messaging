@@ -1,82 +1,53 @@
-import LogRocket from 'logrocket';
-
-// Only initialize LogRocket in production
-const isTest = typeof window !== 'undefined' && window.Cypress;
-const isDev = process.env.NODE_ENV === 'development';
-
-if (!isTest && !isDev) {
-  LogRocket.init('chatgenius/prod', {
-    console: {
-      shouldAggregateConsoleErrors: true,
-      isEnabled: true,
-      methods: ['error', 'warn', 'info'],
-    },
-  });
-}
-
-// Helper to log both to console and LogRocket
-const createLogger = (level) => (...args) => {
-  // In test environment, use console directly for Cypress interception
-  if (isTest) {
-    // Skip debug logs in test environment
-    if (level === 'debug') return;
-    
-    // Ensure args are stringified for Cypress
-    const processedArgs = args.map(arg => 
-      typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-    );
-    // eslint-disable-next-line no-console
-    console.log(`[${level}]`, ...processedArgs);
-    return;
-  }
-
-  // Development: console only
-  if (isDev) {
-    // Skip debug logs in development
-    if (level === 'debug') return;
-    // eslint-disable-next-line no-console
-    console.log(`[${level}]`, ...args);
-    return;
-  }
-
-  // Production: both console and LogRocket
-  // eslint-disable-next-line no-console
-  console.log(`[${level}]`, ...args);
-  LogRocket.track(level, { message: args.join(' ') });
+// Custom console wrapper that's allowed by ESLint
+/* eslint-disable no-console */
+const customConsole = {
+  log: (...args) => console.log(...args),
+  error: (...args) => console.error(...args),
+  warn: (...args) => console.warn(...args),
+  info: (...args) => console.info(...args),
+  debug: (...args) => console.debug(...args),
 };
+/* eslint-enable no-console */
 
-// Export a simple logger interface with all allowed methods
 const logger = {
-  // Direct logging methods
-  error: createLogger('error'),
-  warn: createLogger('warn'),
-  info: createLogger('info'),
-  debug: createLogger('debug'),
-  state: createLogger('state'),
-  perf: createLogger('perf'),
-  flow: createLogger('flow'),
-  feature: createLogger('feature'),
-
-  // Helper methods
-  trackFlow: (flowName, data) => {
-    const logger = createLogger('flow');
-    logger(`Flow: ${flowName}`, data);
+  error: (...args) => {
+    customConsole.error('[ERROR]', ...args);
   },
 
-  measurePerf: (label, duration) => {
-    const logger = createLogger('perf');
-    logger(`Performance: ${label}`, { duration });
+  warn: (...args) => {
+    customConsole.warn('[WARN]', ...args);
   },
 
-  trackState: (component, state) => {
-    const logger = createLogger('state');
-    logger(`State Change: ${component}`, state);
-  }
+  info: (...args) => {
+    customConsole.info('[INFO]', ...args);
+  },
+
+  debug: (...args) => {
+    customConsole.debug('[DEBUG]', ...args);
+  },
+
+  state: (...args) => {
+    customConsole.log('[STATE]', ...args);
+  },
+
+  perf: (...args) => {
+    customConsole.log('[PERF]', ...args);
+  },
+
+  flow: (...args) => {
+    customConsole.log('[FLOW]', ...args);
+  },
+
+  feature: (...args) => {
+    customConsole.log('[FEATURE]', ...args);
+  },
+
+  startFeature: (feature) => {
+    customConsole.log(`[FEATURE START] ${feature}`);
+    return {
+      end: () => customConsole.log(`[FEATURE END] ${feature}`),
+    };
+  },
 };
-
-// Expose logger to window in test environment
-if (isTest && typeof window !== 'undefined') {
-  window.logger = logger;
-}
 
 export default logger; 

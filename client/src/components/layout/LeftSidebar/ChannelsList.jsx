@@ -1,67 +1,60 @@
 'use client';
 
-import { ChevronDown, ChevronRight, Hash, Lock, Plus } from 'lucide-react';
-import { useState } from 'react';
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
-
-// Placeholder data - will be replaced with real data from API
-const channels = [
-  { id: 1, name: 'announcements', isPrivate: false, unread: false },
-  { id: 2, name: 'help', isPrivate: false, unread: true },
-  { id: 3, name: 'introductions', isPrivate: false, unread: false },
-  { id: 4, name: 'social', isPrivate: false, unread: false },
-  { id: 5, name: 'brainlifts', isPrivate: true, unread: true },
-];
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Hash } from 'lucide-react';
+import logger from '@/lib/logger';
 
 export default function ChannelsList() {
-  const [isExpanded, setIsExpanded] = useState(true);
-  const pathname = usePathname();
+  const [channels, setChannels] = useState([]);
+  const [activeChannel, setActiveChannel] = useState(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchChannels = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          logger.warn('No token found, cannot fetch channels');
+          return;
+        }
+
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/channels`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setChannels(response.data.channels);
+      } catch (error) {
+        logger.error('Failed to fetch channels:', error.response?.data?.error || error.message);
+      }
+    };
+
+    fetchChannels();
+  }, []);
+
+  const handleChannelClick = (channel) => {
+    setActiveChannel(channel.name);
+    router.push(`/channel/${channel.name}`);
+  };
 
   return (
-    <div className="py-2">
-      {/* Section Header */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="flex w-full items-center px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        {isExpanded ? (
-          <ChevronDown className="mr-1 h-3 w-3" />
-        ) : (
-          <ChevronRight className="mr-1 h-3 w-3" />
-        )}
-        <span className="font-medium">Channels</span>
-        <Plus className="ml-auto h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
-      </button>
-
-      {/* Channels List */}
-      {isExpanded && (
-        <div className="mt-1 space-y-[2px] px-2">
-          {channels.map((channel) => {
-            const isActive = pathname === `/channel/${channel.id}`;
-            return (
-              <Link
-                key={channel.id}
-                href={`/channel/${channel.id}`}
-                className={`group flex items-center gap-2 rounded-md px-2 py-1 text-sm ${
-                  isActive
-                    ? 'bg-accent text-accent-foreground'
-                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                }`}
-              >
-                {channel.isPrivate ? (
-                  <Lock className="h-3 w-3" />
-                ) : (
-                  <Hash className="h-3 w-3" />
-                )}
-                <span className={channel.unread ? 'font-semibold' : ''}>
-                  {channel.name}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      )}
+    <div className="space-y-2 px-2">
+      {channels.map((channel) => (
+        <Button
+          key={channel.id}
+          variant="ghost"
+          className={cn(
+            'w-full justify-start gap-2',
+            activeChannel === channel.name && 'bg-accent'
+          )}
+          onClick={() => handleChannelClick(channel)}
+        >
+          <Hash className="h-4 w-4" />
+          <span className="truncate">{channel.name}</span>
+        </Button>
+      ))}
     </div>
   );
 } 

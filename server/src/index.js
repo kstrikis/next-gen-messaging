@@ -1,28 +1,29 @@
+// Import modules
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { PrismaClient } from '@prisma/client';
-import 'dotenv/config';
 import logger from './config/logger.js';
+import authRoutes from './routes/auth.js';
+import channelsRoutes from './routes/channels.js';
 
-// Load environment-specific .env file
-const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : 
-                process.env.NODE_ENV === 'production' ? '.env' : 
-                '.env.development';
-
-logger.info('Loading environment configuration', { 
+logger.info('📊 Server configuration:', { 
   nodeEnv: process.env.NODE_ENV,
-  envFile,
   port: process.env.SERVER_PORT || 3001,
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
-  databaseUrl: process.env.DATABASE_URL ? 'Set' : 'Not set'
+  databaseUrl: process.env.DATABASE_URL
 });
 
 // Required environment variables
 const requiredEnvVars = [
   'DATABASE_URL',
   'NODE_ENV',
-  'CORS_ORIGIN'
+  'CORS_ORIGIN',
+  'JWT_SECRET',
+  'AUTH0_DOMAIN',
+  'AUTH0_CLIENT_ID',
+  'AUTH0_CLIENT_SECRET',
+  'AUTH0_AUDIENCE'
 ];
 
 const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
@@ -40,8 +41,20 @@ logger.info('Server configuration:', {
   databaseUrl: process.env.DATABASE_URL ? 'Set' : 'Not set'
 });
 
+// CORS configuration
+const corsOptions = {
+  origin: [
+    process.env.CORS_ORIGIN,
+    `https://${process.env.AUTH0_DOMAIN}`
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  maxAge: 86400 // 24 hours
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(helmet());
 app.use(express.json());
 
@@ -56,18 +69,52 @@ try {
   prisma = null;
 }
 
+// Request logging middleware
+app.use((req, res, next) => {
+  logger.info('Incoming request:', { 
+    method: req.method,
+    path: req.path,
+    query: Object.keys(req.query).length ? JSON.stringify(req.query) : undefined,
+    body: req.method === 'POST' ? JSON.stringify(req.body) : undefined,
+    headers: {
+      'content-type': req.headers['content-type'],
+      'user-agent': req.headers['user-agent'],
+      'authorization': req.headers.authorization ? 'Bearer [redacted]' : undefined
+    }
+  });
+  next();
+});
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/channels', channelsRoutes);
+
 // Health check route
-app.get('/api/health', (req, res) => {
-  res.json({ 
+app.get('/api/health', async (req, res) => {
+  const databaseUrl = process.env.DATABASE_URL || 'unknown';
+  // Parse database name from URL, handling both standard and query param formats
+  const dbName = databaseUrl.match(/\/([^/?]+)(?:\?|$)/)?.[1] || 'unknown';
+  
+  let dbStatus = 'disconnected';
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    dbStatus = 'connected';
+  } catch (error) {
+    logger.error('Database health check failed:', { error: error.message });
+  }
+  
+  res.json({
     status: 'ok',
-    timestamp: new Date().toISOString(),
-    database: prisma ? 'connected' : 'disconnected',
-    uptime: process.uptime()
+    database: {
+      status: dbStatus,
+      name: dbName,
+      environment: process.env.NODE_ENV
+    }
   });
 });
 
 // User Management Context - only enabled if database is connected
-app.get('/api/users/profile', async (req, res, next) => {
+app.get('/api/users/profile', async (req, res) => {
   if (!prisma) {
     return res.status(503).json({ error: 'Database service unavailable' });
   }
@@ -83,7 +130,7 @@ app.get('/api/users/profile', async (req, res, next) => {
     res.json(users);
   } catch (error) {
     logger.error('Database query failed:', { error: error.message, stack: error.stack });
-    next(error);
+    return res.status(503).json({ error: 'Database query failed' });
   }
 });
 
@@ -210,4 +257,6 @@ process.on('exit', (code) => {
   }
   // Note: This is a synchronous event, async operations won't work here
   logger.info('Process exiting', { code });
-}); 
+});
+
+export default app; 

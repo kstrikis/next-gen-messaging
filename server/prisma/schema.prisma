@@ -15,11 +15,31 @@ datasource db {
 
 model User {
   id           String   @id @default(uuid())
-  email        String   @unique
+  email        String?  @unique // Optional for guest users
   username     String   @unique
-  passwordHash String
+  passwordHash String?  // Optional for guest users
+  auth0Id      String?  @unique // Auth0 user ID
+  isGuest      Boolean  @default(false)
+  lastSeen     DateTime @default(now())
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  channels     Channel[] @relation("ChannelMembers")
 
   @@map("users")
+  @@index([email])
+  @@index([username])
+  @@index([auth0Id])
+}
+
+model Channel {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  isPrivate   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  members     User[]    @relation("ChannelMembers")
+
+  @@map("channels")
+  @@index([name])
 }

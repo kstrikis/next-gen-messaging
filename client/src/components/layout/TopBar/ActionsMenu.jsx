@@ -1,10 +1,13 @@
 'use client';
 
 import { HelpCircle, Settings } from 'lucide-react';
+import LogoutButton from '@/components/auth/LogoutButton';
+import UserInfo from './UserInfo';
 
 export default function ActionsMenu() {
   return (
     <div className="flex items-center gap-2">
+      <UserInfo />
       <button
         className="rounded-sm p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
         aria-label="Help"
@@ -43,6 +46,7 @@ export default function ActionsMenu() {
           <path d="M7 2v11c0 .55-.45 1-1 1H2v4c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-4c-.55 0-1-.45-1-1V2c0-.55-.45-1-1-1h-6c-.55 0-1 .45-1 1Z" />
         </svg>
       </button>
+      <LogoutButton />
     </div>
   );
 } 

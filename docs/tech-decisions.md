@@ -375,3 +375,131 @@ This document outlines the key technical decisions made for the ChatGenius proje
    - Code splitting
    - Service worker
    - Asset optimization
+
+## Authentication
+
+- Using Auth0 for authentication
+  - Single Page Application type
+  - Authorization Code flow with PKCE
+  - Token Endpoint Authentication Method: None
+  - No audience parameter for regular authentication
+  - Local storage for token caching
+  - Debug tools at `/debug/auth` for configuration verification
+  - JWT tokens for API access
+  - User profile sync with local database
+  - Email verification support planned
+  - Role-based access control planned
+
+## Environment Configuration
+
+- Using dotenvx for environment variable management
+  - Separate .env files for development, test, and production
+  - Environment-specific files loaded based on script context
+  - Separate configurations for client and server
+
+## Database
+
+- Using PostgreSQL with Prisma
+  - Type-safe database access
+  - Easy schema management
+  - Built-in migrations
+
+## API
+
+- RESTful API design
+- Version prefix: /api/v1
+- Rate limiting implemented
+- JWT authentication for protected routes
+
+## Testing
+
+- Jest for unit and integration tests
+- Separate test database with its own schema
+- Test data seeding for consistent test environment
+
+## Logging
+
+- Winston for server-side logging
+- Structured logging format
+- Different log levels for development and production
+
+## Frontend
+
+- Next.js for React framework
+- Client-side state management with React hooks
+- Tailwind CSS for styling
+
+## WebSocket
+
+- Socket.IO for real-time communication
+- Separate WebSocket server
+- Authentication handled through JWT tokens
+
+## Real-time Messaging Architecture
+
+1. **WebSocket Technology**
+
+   - Socket.IO for real-time communication
+     - Built-in reconnection handling
+     - Room-based channel management
+     - Binary data support
+     - Automatic fallback to polling
+     - Client presence detection
+     - Server-side events
+     - Middleware support
+     - Namespace organization
+
+2. **Message Storage**
+
+   - PostgreSQL for persistence
+     - JSONB for rich message content
+     - Full-text search capability
+     - Efficient indexing
+     - Transaction support
+     - Referential integrity
+     - Concurrent access
+     - Message archival
+     - Backup strategy
+
+3. **Message Delivery**
+
+   - Optimistic UI updates
+   - Message queuing
+   - Delivery receipts
+   - Offline support
+   - Message ordering
+   - Conflict resolution
+   - Rate limiting
+   - Error handling
+
+4. **Performance Optimization**
+
+   - Message batching
+   - Pagination strategy
+   - Cache management
+   - Connection pooling
+   - Query optimization
+   - Index management
+   - Load balancing
+   - Resource limits
+
+5. **Security Considerations**
+
+   - Input validation
+   - Content sanitization
+   - Rate limiting
+   - Permission checks
+   - Encryption
+   - XSS prevention
+   - CSRF protection
+   - Audit logging
+
+6. **Monitoring & Metrics**
+   - Message delivery rates
+   - System performance
+   - Error tracking
+   - User engagement
+   - Resource usage
+   - API latency
+   - Socket health
+   - Database load
