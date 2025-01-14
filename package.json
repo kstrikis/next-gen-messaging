@@ -13,9 +13,12 @@
   "scripts": {
     "prepare": "[ \"$NODE_ENV\" = \"development\" ] && husky install || echo 'Skipping husky setup in production'",
     "dev:client": "cd client && npm run dev",
-    "dev:server": "cd server && NODE_OPTIONS='--no-deprecation --disable-warning=ExperimentalWarning' npm run dev",
-    "dev": "concurrently \"cd client && npm run dev\" \"cd server && NODE_OPTIONS='--no-deprecation --disable-warning=ExperimentalWarning' npm run dev\"",
+    "dev:server": "cd server && npm run dev",
+    "dev": "concurrently \"cd client && npm run build && npm run dev\" \"cd server && npm run build && npm run dev\"",
     "build": "npm run install:all && cd client && npm run build && cd ../server && npm run build",
+    "build:client": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    "build-storybook": "cd client && npm run build-storybook",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{js,jsx,json,md}\"",
@@ -32,15 +35,12 @@
     "test:ci": "npm run test:all -- --ci --coverage",
     "test:local-ci": "trap 'docker ps -q | xargs -r docker stop; docker ps -aq | xargs -r docker rm' EXIT; act -j test --container-architecture linux/amd64",
     "storybook": "cd client && npm run storybook",
-    "build-storybook": "cd client && npm run build-storybook",
     "validate": "npm run lint && npm run test:unit",
-    "build:client": "cd client && npm run build",
-    "build:server": "cd server && npm run build",
     "clean": "rm -rf node_modules client/node_modules server/node_modules",
     "clean:build": "rm -rf client/.next server/dist",
     "install:all": "npm i && cd client && npm i && cd ../server && npm i",
     "update:all": "npm update && cd client && npm update && cd ../server && npm update",
-    "start": "npm run build:client && NODE_ENV=production concurrently \"cd client && npm run start\" \"cd server && npm run start\""
+    "start": "echo \"Starting services...\" && NODE_ENV=production concurrently \"cd client && npm run build && npm run start\" \"cd server && npm run build && npm run start\""
   },
   "lint-staged": {
     "client/**/*.{js,jsx}": [

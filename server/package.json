@@ -7,8 +7,8 @@
     "test": "tests"
   },
   "scripts": {
-    "dev": "NODE_ENV=development NODE_OPTIONS='--no-deprecation' nodemon src/index.js",
-    "start": "NODE_ENV=production node src/index.js",
+    "dev": "NODE_ENV=development NODE_OPTIONS='--no-deprecation --disable-warning=ExperimentalWarning' nodemon src/index.js -p ${SERVER_PORT:-3001}",
+    "start": "echo \"Starting server...\" && NODE_ENV=production node src/index.js -p ${SERVER_PORT:-3001}",
     "test": "NODE_ENV=test jest",
     "test:watch": "NODE_ENV=test jest --watch",
     "test:coverage": "NODE_ENV=test jest --coverage",
