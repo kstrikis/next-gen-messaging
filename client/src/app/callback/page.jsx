@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import logger from '@/lib/logger';
 
 export default function CallbackPage() {
-  const { isAuthenticated, isLoading, error, user, getAccessTokenSilently } = useAuth0();
+  const { isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
   const router = useRouter();
   const { toast } = useToast();
   const [isTokenExchanged, setIsTokenExchanged] = useState(false);
