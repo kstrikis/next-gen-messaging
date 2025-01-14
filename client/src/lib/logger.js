@@ -1,76 +1,51 @@
-const isDevelopment = process.env.NODE_ENV === 'development';
+// Custom console wrapper that's allowed by ESLint
+/* eslint-disable no-console */
+const customConsole = {
+  log: (...args) => console.log(...args),
+  error: (...args) => console.error(...args),
+  warn: (...args) => console.warn(...args),
+  info: (...args) => console.info(...args),
+  debug: (...args) => console.debug(...args),
+};
+/* eslint-enable no-console */
 
 const logger = {
-  error: (message, ...args) => {
-    if (isDevelopment) {
-      console.error(`[ERROR] ${message}`, ...args);
-    }
-    // In production, we could send this to LogRocket or another service
-    if (process.env.NEXT_PUBLIC_LOGROCKET_APP_ID) {
-      // LogRocket.captureException(args[0]);
-    }
+  error: (...args) => {
+    customConsole.error('[ERROR]', ...args);
   },
 
-  warn: (message, ...args) => {
-    if (isDevelopment) {
-      console.warn(`[WARN] ${message}`, ...args);
-    }
+  warn: (...args) => {
+    customConsole.warn('[WARN]', ...args);
   },
 
-  info: (message, ...args) => {
-    if (isDevelopment) {
-      console.info(`[INFO] ${message}`, ...args);
-    }
+  info: (...args) => {
+    customConsole.info('[INFO]', ...args);
   },
 
-  debug: (message, ...args) => {
-    if (isDevelopment) {
-      console.debug(`[DEBUG] ${message}`, ...args);
-    }
+  debug: (...args) => {
+    customConsole.debug('[DEBUG]', ...args);
   },
 
-  state: (message, ...args) => {
-    if (isDevelopment) {
-      console.log(`[STATE] ${message}`, ...args);
-    }
+  state: (...args) => {
+    customConsole.log('[STATE]', ...args);
   },
 
-  perf: (message, ...args) => {
-    if (isDevelopment) {
-      console.log(`[PERF] ${message}`, ...args);
-    }
+  perf: (...args) => {
+    customConsole.log('[PERF]', ...args);
   },
 
-  flow: (message, ...args) => {
-    if (isDevelopment) {
-      console.log(`[FLOW] ${message}`, ...args);
-    }
+  flow: (...args) => {
+    customConsole.log('[FLOW]', ...args);
   },
 
-  feature: (message, ...args) => {
-    if (isDevelopment) {
-      console.log(`[FEATURE] ${message}`, ...args);
-    }
+  feature: (...args) => {
+    customConsole.log('[FEATURE]', ...args);
   },
 
-  startFeature: (featureName) => {
-    if (isDevelopment) {
-      console.group(`[FEATURE] ${featureName}`);
-    }
+  startFeature: (feature) => {
+    customConsole.log(`[FEATURE START] ${feature}`);
     return {
-      step: (stepName, data) => logger.feature(`↪️ ${featureName} - ${stepName}`, data),
-      complete: (data) => {
-        logger.feature(`✅ Completed: ${featureName}`, data);
-        if (isDevelopment) {
-          console.groupEnd();
-        }
-      },
-      fail: (error) => {
-        logger.error(`❌ Failed: ${featureName}`, error);
-        if (isDevelopment) {
-          console.groupEnd();
-        }
-      },
+      end: () => customConsole.log(`[FEATURE END] ${feature}`),
     };
   },
 };

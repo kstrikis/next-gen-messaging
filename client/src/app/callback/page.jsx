@@ -1,100 +1,70 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-
-// Simple logger for client side
-const logger = {
-  info: (...args) => console.log('[Auth Callback]', ...args),
-  error: (...args) => console.error('[Auth Callback Error]', ...args),
-  debug: (...args) => console.debug('[Auth Callback Debug]', ...args),
-  warn: (...args) => console.warn('[Auth Callback Warning]', ...args)
-};
+import { useToast } from '@/hooks/use-toast';
+import logger from '@/lib/logger';
 
 export default function CallbackPage() {
-  const { isLoading, isAuthenticated, error, user, getAccessTokenSilently } = useAuth0();
+  const { isAuthenticated, isLoading, error, user, getAccessTokenSilently } = useAuth0();
   const router = useRouter();
+  const { toast } = useToast();
+  const [isTokenExchanged, setIsTokenExchanged] = useState(false);
 
   useEffect(() => {
-    const syncWithBackend = async () => {
+    const exchangeToken = async () => {
       try {
-        logger.info('Starting backend sync...', { user });
-        const token = await getAccessTokenSilently();
-        
-        // Get user info from Auth0
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/auth/auth0/callback`,
-          {
-            params: {
-              ...user,
-              access_token: token
+        // If authenticated with Auth0, exchange token
+        if (isAuthenticated) {
+          logger.info('Starting token exchange...');
+          const token = await getAccessTokenSilently();
+          
+          const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/auth/auth0/callback`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
             }
-          }
-        );
+          );
 
-        logger.info('Backend response:', { 
-          status: response.status,
-          data: response.data 
-        });
-
-        if (response.status !== 200) {
-          throw new Error(`Failed to sync with backend: ${response.data?.error || 'Unknown error'}`);
-        }
-
-        // Store the JWT token
-        localStorage.setItem('token', response.data.token);
-        
-        // Check if general channel exists before redirecting
-        try {
-          await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/channels/general`, {
-            headers: { Authorization: `Bearer ${response.data.token}` }
-          });
-          logger.info('General channel found, redirecting...');
+          logger.info('Token exchange successful');
+          localStorage.setItem('token', response.data.token);
+          setIsTokenExchanged(true);
           router.push('/channel/general');
-        } catch (channelError) {
-          logger.warn('General channel not found, redirecting to home:', { error: channelError.message });
-          router.push('/');
         }
       } catch (error) {
-        logger.error('Sync process failed', { 
-          error: error.message,
-          response: error.response?.data,
-          status: error.response?.status
+        logger.error('Token exchange error:', error);
+        toast({
+          title: 'Authentication Error',
+          description: 'Failed to authenticate with the server. Please try again.',
+          variant: 'destructive'
         });
         router.push('/');
       }
     };
 
+    // Check for token from guest login
+    const token = localStorage.getItem('token');
+    
     if (!isLoading) {
-      logger.info('Auth state ready', { isAuthenticated, hasUser: !!user, hasError: !!error });
-      if (error) {
-        logger.error('Auth0 error', { 
-          message: error.message, 
-          stack: error.stack,
-          name: error.name
-        });
-        router.push('/');
-      } else if (isAuthenticated && user) {
-        syncWithBackend();
-      } else {
-        logger.info('User not authenticated, redirecting to home');
+      if (isAuthenticated && !isTokenExchanged) {
+        exchangeToken();
+      } else if (!token) {
         router.push('/');
       }
     }
-  }, [isAuthenticated, isLoading, user, getAccessTokenSilently, router, error]);
+  }, [isAuthenticated, isLoading, router, getAccessTokenSilently, toast, isTokenExchanged]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold mb-4">Setting up your account...</h1>
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto"></div>
-        <p className="mt-4 text-gray-600">
-          {isLoading ? 'Checking authentication...' : 
-           isAuthenticated ? 'Syncing with server...' : 
-           'Redirecting...'}
-        </p>
+      <div 
+        role="status"
+        className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"
+      >
+        <span className="sr-only">Loading...</span>
       </div>
     </div>
   );
