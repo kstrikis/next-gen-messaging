@@ -233,6 +233,8 @@
     - Guest login flow
     - Username validation
     - Token storage
+    - Router mocking using next/navigation
+    - Mock useRouter for protected route tests
   - UI tests:
     - Message composer functionality
     - Formatting toolbar behavior
@@ -245,6 +247,8 @@
   - Avoid redundant ARIA roles
   - Follow Testing Library best practices
   - Prefer semantic queries over test IDs when possible
+  - Mock next/navigation for routing tests
+  - Mock Auth0 hooks for authentication tests
 
 ## Logging Strategy
 
