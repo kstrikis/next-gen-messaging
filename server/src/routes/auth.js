@@ -1,13 +1,34 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import logger from '../config/logger.js';
 import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
-import { authenticateJWT } from '../middleware/auth.js';
-import { findUniqueGuestUsername } from '../controllers/auth.js';
+import logger from '../config/logger.js';
+import authenticateJWT from '../middleware/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
+
+// Helper function to generate unique guest username
+async function findUniqueGuestUsername(baseUsername = '') {
+  let username = baseUsername;
+  if (!username) {
+    const randomNumber = Math.floor(Math.random() * 10000);
+    username = `guest${randomNumber}`;
+  }
+
+  // Check if username exists
+  const existingUser = await prisma.user.findUnique({
+    where: { username }
+  });
+
+  if (!existingUser) {
+    return username;
+  }
+
+  // If username exists, append a random number
+  const randomSuffix = Math.floor(Math.random() * 10000);
+  return findUniqueGuestUsername(`${username}${randomSuffix}`);
+}
 
 // Get current user
 router.get('/me', authenticateJWT, async (req, res) => {
@@ -108,12 +129,31 @@ router.post('/guest', async (req, res) => {
     // Use the guest name generation functions from auth controller
     const uniqueUsername = await findUniqueGuestUsername(username || '');
     
-    // Create guest user
+    // Find or create the general channel
+    let generalChannel = await prisma.channel.findFirst({
+      where: { name: 'general' }
+    });
+
+    if (!generalChannel) {
+      // Create general channel if it doesn't exist
+      logger.info('Creating general channel');
+      generalChannel = await prisma.channel.create({
+        data: {
+          name: 'general',
+          description: 'General discussion channel'
+        }
+      });
+    }
+    
+    // Create guest user and add to general channel
     const user = await prisma.user.create({
       data: {
         username: uniqueUsername,
         email: `${uniqueUsername}@guest.local`,
-        isGuest: true
+        isGuest: true,
+        channels: {
+          connect: { id: generalChannel.id }
+        }
       }
     });
 
@@ -129,7 +169,10 @@ router.post('/guest', async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    logger.info('Guest login successful', { userId: user.id });
+    logger.info('Guest login successful', { 
+      userId: user.id,
+      channelId: generalChannel.id 
+    });
     res.json({ token, user });
   } catch (error) {
     logger.error('Guest login error:', { error: error.message });

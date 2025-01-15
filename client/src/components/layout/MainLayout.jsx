@@ -8,6 +8,7 @@ import TopBar from './TopBar';
 
 export default function MainLayout({ children }) {
   const [showLeftSidebar, setShowLeftSidebar] = useState(true);
+  const [showRightSidebar, setShowRightSidebar] = useState(false);
   const pathname = usePathname();
 
   // Extract channel ID from pathname if it's a channel route
@@ -41,9 +42,11 @@ export default function MainLayout({ children }) {
           <div className="flex-1">{children}</div>
 
           {/* Right Sidebar */}
-          <div className="w-64">
-            <RightSidebar type={type} channelId={channelId} />
-          </div>
+          {showRightSidebar && (
+            <div className="w-64">
+              <RightSidebar type={type} channelId={channelId} />
+            </div>
+          )}
         </div>
       </div>
     </div>

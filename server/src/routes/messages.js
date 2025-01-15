@@ -1,7 +1,7 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import logger from '../config/logger.js';
-import { authenticateJWT } from '../middleware/auth.js';
+import authenticateJWT from '../middleware/auth.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -23,7 +23,7 @@ router.get('/channels/:channelId/messages', async (req, res) => {
       },
       take: parseInt(limit),
       orderBy: {
-        createdAt: 'desc'
+        createdAt: 'asc'
       },
       include: {
         sender: {

@@ -1108,6 +1108,27 @@ Required Configuration:
 - Add typing indicators
 - Add message threading support
 - Add file upload support
+
+## Channel Members Implementation
+
+- RightSidebar displays channel members list when in a channel
+- ChannelMembers component fetches members from `/api/channels/:channelId/members` endpoint
+- Each member displays:
+  - Avatar with initials fallback
+  - Username
+  - Online status (when available)
+- Loading states and error handling implemented
+- Member count shown in header
+- Responsive layout with proper border handling
+- PropTypes validation for type safety
+
+## Layout Updates
+
+- MainLayout now handles channel/DM type detection from URL
+- RightSidebar visibility controlled by content type
+- Proper border handling between main content and sidebars
+- Smooth transitions for sidebar visibility
+- Responsive width handling for all columns
 - Add message search functionality
 
 ## Utility Functions

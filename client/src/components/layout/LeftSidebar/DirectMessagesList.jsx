@@ -1,18 +1,11 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
-import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-
-// Placeholder data - will be replaced with real data from API
-const directMessages = [
-  { id: 1, name: 'Aaron Gallant', status: 'online', unread: false },
-  { id: 2, name: 'Kriss Strikis', status: 'offline', unread: true },
-  { id: 3, name: 'Riley Bird', status: 'online', unread: false },
-  { id: 4, name: 'Tom Tarpey', status: 'away', unread: false },
-  { id: 5, name: 'Tyler Puig', status: 'offline', unread: false },
-];
+import axios from 'axios';
+import logger from '@/lib/logger';
 
 const statusColors = {
   online: 'bg-green-500',
@@ -22,7 +15,50 @@ const statusColors = {
 
 export default function DirectMessagesList() {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [users, setUsers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const pathname = usePathname();
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
+
+        // Get current channel ID from pathname
+        const channelMatch = pathname.match(/^\/channel\/([^/]+)$/);
+        const channelId = channelMatch ? channelMatch[1] : null;
+
+        if (!channelId) {
+          throw new Error('No channel ID found');
+        }
+
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/channels/${channelId}/members`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        setUsers(response.data.members);
+        logger.info('📥 Channel members fetched:', { 
+          channelId,
+          count: response.data.members.length,
+        });
+      } catch (error) {
+        logger.error('Failed to fetch channel members:', error.response?.data?.error || error.message);
+        setError(error.response?.data?.error || error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, [pathname]);
 
   return (
     <div className="py-2">
@@ -36,39 +72,39 @@ export default function DirectMessagesList() {
         ) : (
           <ChevronRight className="mr-1 h-3 w-3" />
         )}
-        <span className="font-medium">Direct Messages</span>
+        <span className="font-medium">Channel Members</span>
         <Plus className="ml-auto h-4 w-4 opacity-0 transition-opacity group-hover:opacity-100" />
       </button>
 
-      {/* DMs List */}
+      {/* Users List */}
       {isExpanded && (
         <div className="mt-1 space-y-[2px] px-2">
-          {directMessages.map((dm) => {
-            const isActive = pathname === `/dm/${dm.id}`;
-            return (
-              <Link
-                key={dm.id}
-                href={`/dm/${dm.id}`}
-                className={`group flex items-center gap-2 rounded-md px-2 py-1 text-sm ${
-                  isActive
-                    ? 'bg-accent text-accent-foreground'
-                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                }`}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+            </div>
+          ) : error ? (
+            <div className="px-2 py-1 text-sm text-red-500">{error}</div>
+          ) : users.length === 0 ? (
+            <div className="px-2 py-1 text-sm text-muted-foreground">No members found</div>
+          ) : (
+            users.map((user) => (
+              <div
+                key={user.id}
+                className="group flex items-center gap-2 rounded-md px-2 py-1 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               >
                 <div className="relative flex h-4 w-4 items-center justify-center">
                   <div className="h-4 w-4 rounded bg-primary/10" />
                   <div
                     className={`absolute bottom-0 right-0 h-2 w-2 rounded-full ring-1 ring-background ${
-                      statusColors[dm.status]
+                      user.isOnline ? statusColors.online : statusColors.offline
                     }`}
                   />
                 </div>
-                <span className={dm.unread ? 'font-semibold' : ''}>
-                  {dm.name}
-                </span>
-              </Link>
-            );
-          })}
+                <span>{user.username}</span>
+              </div>
+            ))
+          )}
         </div>
       )}
     </div>
