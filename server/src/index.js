@@ -11,7 +11,7 @@ import { setupWebSocketServer } from './socket/index.js';
 
 logger.info('📊 Server configuration:', { 
   nodeEnv: process.env.NODE_ENV,
-  port: process.env.PORT ? process.env.SERVER_PORT : 3001,
+  port: process.env.PORT || process.env.SERVER_PORT || 3001,
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
   databaseUrl: process.env.DATABASE_URL
 });
@@ -35,7 +35,7 @@ if (missingEnvVars.length > 0) {
 }
 
 const app = express();
-const port = process.env.PORT ? process.env.SERVER_PORT : 3001;
+const port = process.env.PORT || process.env.SERVER_PORT || 3001;
 
 logger.info('Server configuration:', { 
   port,
