@@ -35,6 +35,9 @@ describe('Message Composer', () => {
   });
 
   it('handles text input and formatting', () => {
+    // Wait for message list to be ready (either empty or loaded)
+    cy.get('[data-testid="message-list-empty"], [data-testid="message-list-loaded"]').should('exist');
+    
     cy.get('textarea').as('composer');
     cy.get('@composer').focus();
     cy.get('@composer').type('test message');

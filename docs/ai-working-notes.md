@@ -235,6 +235,11 @@
    - Messages:
      - MessageList: grouped by date
      - Message: user info, reactions, actions
+       - Test attributes:
+         - data-testid="message-{id}": Unique message container
+         - data-testid="message-author": Username display
+         - data-testid="message-timestamp": Message timestamp
+         - data-testid="message-content": Message text content
      - MessageComposer: rich text, emojis, attachments
    - Activity:
      - Tabbed interface for notifications/activity
@@ -243,17 +248,17 @@
 ## Testing Configuration
 
 - E2E tests run locally with 'npm run test:e2e'
-- Environment variables loaded from .env.test using dotenvx
-- Frontend: localhost:3000
-- Backend: localhost:3001
-- Environment variables:
-  - NEXT_PUBLIC_API_URL and NEXT_PUBLIC_SOCKET_URL in .env.development take precedence
-  - next.config.mjs provides fallback values for development and production
-- Test cleanup:
-  - Kills processes on ports 3000 and 3001
-  - Removes nodemon and dev processes
-  - Uses trap for cleanup on exit
-- Health checks before test execution
+- Latest test run (successful):
+  - Total: 18 tests across 5 spec files
+  - Passing: 17 tests
+  - Pending: 1 test (message-composer component mount logging)
+  - Coverage:
+    - Guest authentication (6 tests)
+    - API endpoints (4 tests)
+    - Message composer (6 tests)
+    - Message display (2 tests)
+  - Known warnings: "Channel not found channelId=general" during tests
+  - Average run time: 36 seconds
 
 ### Known Issues
 
@@ -288,6 +293,24 @@
     - MessageComposer unit tests
     - MessageComposer E2E tests
     - Component mount logging tests
+
+### Message Tests
+
+1. End-to-End Tests:
+   - Message sending and display:
+     - Verifies messages appear after sending
+     - Checks message order is preserved
+     - Tests long message handling
+     - Validates special character support (Unicode, emojis)
+   - Required data-testid attributes:
+     - message-list: Container for messages
+     - message-input: Text input for new messages
+     - guest-login-button: Guest login button
+   - Test scenarios:
+     - Basic message sending and display
+     - Multiple message ordering
+     - Long message wrapping
+     - Special character rendering
 
 ## Logging Configuration
 
