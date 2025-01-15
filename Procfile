@@ -1,2 +1,2 @@
-web: npm run start
-release: cd server && npx prisma migrate deploy 
+release: cd server && npx prisma migrate deploy
+web: npm run start 

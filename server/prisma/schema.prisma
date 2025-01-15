@@ -14,16 +14,19 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String?  @unique // Optional for guest users
-  username     String   @unique
-  passwordHash String?  // Optional for guest users
-  auth0Id      String?  @unique // Auth0 user ID
-  isGuest      Boolean  @default(false)
-  lastSeen     DateTime @default(now())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  channels     Channel[] @relation("ChannelMembers")
+  id           String     @id @default(uuid())
+  email        String?    @unique // Optional for guest users
+  username     String     @unique
+  passwordHash String?    // Optional for guest users
+  auth0Id      String?    @unique // Auth0 user ID
+  isGuest      Boolean    @default(false)
+  lastSeen     DateTime   @default(now())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  channels     Channel[]  @relation("ChannelMembers")
+  messages     Message[]  @relation("MessageSender")
+  reactions    Reaction[] @relation("ReactionUser")
+  mentions     Message[]  @relation("MessageMentions")
 
   @@map("users")
   @@index([email])
@@ -39,7 +42,43 @@ model Channel {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   members     User[]    @relation("ChannelMembers")
+  messages    Message[] @relation("ChannelMessages")
 
   @@map("channels")
   @@index([name])
+}
+
+model Message {
+  id        String     @id @default(uuid())
+  content   String
+  senderId  String
+  channelId String
+  isEdited  Boolean    @default(false)
+  isPinned  Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  sender    User       @relation("MessageSender", fields: [senderId], references: [id])
+  channel   Channel    @relation("ChannelMessages", fields: [channelId], references: [id])
+  reactions Reaction[] @relation("MessageReactions")
+  mentions  User[]     @relation("MessageMentions")
+
+  @@map("messages")
+  @@index([senderId])
+  @@index([channelId])
+  @@index([createdAt])
+}
+
+model Reaction {
+  id        String   @id @default(uuid())
+  emoji     String
+  userId    String
+  messageId String
+  createdAt DateTime @default(now())
+  user      User     @relation("ReactionUser", fields: [userId], references: [id])
+  message   Message  @relation("MessageReactions", fields: [messageId], references: [id])
+
+  @@map("reactions")
+  @@index([userId])
+  @@index([messageId])
+  @@unique([userId, messageId, emoji])
 }

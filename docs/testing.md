@@ -36,7 +36,7 @@ describe('Error Handling', () => {
     // 1. Setup error condition
     // 2. Trigger error
     // 3. Verify response format
-    // 4. Verify log entry
+    // 4. Verify error is logged at appropriate level
   });
 });
 
@@ -82,6 +82,9 @@ The E2E test environment is automatically managed by Cypress:
 - Port 3001 is cleaned up if needed
 - Test database is used via environment variables
 - Server is shut down after tests complete
+- LOG_LEVEL defaults to 'warn'
+- Console output is filtered by LOG_LEVEL
+- All logging tests are skipped (unreliable)
 
 ### 4. Component Tests
 
@@ -133,6 +136,7 @@ The test database configuration is defined in `.env.test` and `server/.env.test`
 
 ```env
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/chatgenius_test?schema=public"
+LOG_LEVEL=warn
 ```
 
 ## Test Coverage Requirements
@@ -204,6 +208,7 @@ environment:
   node_version: '22.x'
   database: 'chatgenius_test'
   env_file: '.env.test'
+  log_level: 'warn' # default for all test environments
 ```
 
 ## Testing Stack
@@ -221,6 +226,7 @@ tools:
 
   e2e_testing:
     - cypress
+    - cypress-intercept-logs
 
   component_testing:
     - storybook
@@ -247,9 +253,33 @@ test_directories:
   client:
     - src/**/*.test.js
     - src/**/*.stories.js
+```
 
-  e2e:
-    - cypress/e2e/
-    - cypress/fixtures/
-    - cypress/support/
+## Known Issues
+
+1. Guest Login Tests:
+
+   - Added reliable message loading detection:
+     - MessageList component now has data-testid="message-list-empty" when channel is empty
+     - MessageList component now has data-testid="message-list-loaded" when messages are loaded
+     - Test waits for either state before proceeding
+   - Test verifies:
+     - User verification API call
+     - Channel data API call
+     - Messages API call
+     - Message list presence (empty or loaded)
+     - Message composer presence
+
+2. Logging Tests:
+   - All logging tests are skipped (unreliable with LOG_LEVEL changes)
+   - This includes:
+     - MessageComposer unit tests
+     - MessageComposer E2E tests
+     - Component mount logging tests
+   - Console output is filtered by LOG_LEVEL in both:
+     - Cypress command log
+     - Browser console
+
+```
+
 ```

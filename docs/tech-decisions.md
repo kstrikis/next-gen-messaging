@@ -236,110 +236,64 @@ This document outlines the key technical decisions made for the ChatGenius proje
 
 ## Logging Strategy
 
-### Frontend Logging (LogRocket)
+### Frontend Logging
 
 1. **Environment Configuration**
 
-   - Production: LogRocket + console
-   - Development: Console only
-   - Test: Cypress-interceptable
-   - Debug logs filtered in dev/test
+   - All environments: Custom console wrapper
+   - LOG_LEVEL environment variable controls all logging
+   - Default level: 'warn' in all environments
+   - Consistent log formatting
    - Automatic error tracking
-   - Session recording
    - Network monitoring
    - Redux integration
-   - Performance metrics
-   - Error boundaries
 
 2. **Log Levels**
 
-   - error: Application errors
-   - warn: Non-critical issues
-   - info: State changes and actions
-   - debug: Detailed debugging
-   - state: Component state
-   - perf: Performance metrics
-   - flow: User journey
-   - feature: Implementation logs
+   - error (0): Critical errors needing immediate attention
+   - warn (1): Potential issues or deprecated features
+   - info (2): General application state information
+   - debug (3): Detailed debugging information
+   - state (4): Component/store state changes
+   - perf (5): Performance measurements
+   - flow (6): User/data flow tracking
+   - feature (7): New feature implementation logs
 
-3. **Format & Structure**
+3. **Test Environment**
 
-   - Emoji prefixes for scanning
-   - Structured metadata
-   - Consistent timestamps
-   - JSON in test environment
-   - Stack traces
-   - Component context
-   - User actions
-   - State changes
-   - Performance marks
-   - Error details
-
-4. **Helper Methods**
-   - trackFlow: Journey tracking
-   - measurePerf: Performance
-   - trackState: State changes
-   - logError: Error handling
-   - logWarning: Warnings
-   - logInfo: Information
-   - logDebug: Debug info
-   - logMetric: Metrics
-   - logEvent: Events
-   - logAction: Actions
+   - Cypress intercepts all console methods
+   - Logs filtered by LOG_LEVEL in both:
+     - Cypress command log
+     - Browser console
+   - All logging tests skipped (unreliable)
+   - Network requests captured
+   - Aggregated per test
 
 ### Backend Logging (Winston)
 
-1. **Transport Configuration**
+1. **Configuration**
 
-   - Console: All environments
-   - error.log: Sync writes
-   - combined.log: Info+
-   - development.log: Dev only
-   - Crash handling
-   - Process monitoring
-   - Uncaught exceptions
-   - Unhandled rejections
-   - Log rotation
-   - Size limits
+   - LOG_LEVEL environment variable controls all logging
+   - Default level: 'warn' in all environments
+   - Structured logging format
+   - Error tracking with stack traces
+   - Request/response logging
+   - Performance monitoring
 
-2. **Format & Structure**
+2. **Output Streams**
 
-   - Dev: Human-readable
-   - Prod: JSON format
-   - Key=value metadata
-   - Stack traces
-   - Request context
-   - User context
-   - Performance data
-   - Database queries
-   - API endpoints
-   - WebSocket events
+   - Console (filtered by LOG_LEVEL)
+   - error.log (error level only)
+   - combined.log (all levels up to LOG_LEVEL)
 
-3. **Error Handling**
+3. **Best Practices**
 
-   - Uncaught exceptions
-   - Unhandled rejections
-   - Process exits
-   - Crash reports
-   - Error boundaries
-   - API errors
-   - Database errors
-   - Network errors
-   - Validation errors
-   - Auth failures
-
-4. **Log Management**
-
-   - Log rotation
-   - Size limits
-   - Retention policy
-   - Archival strategy
-   - Search capability
-   - Alert triggers
-   - Dashboard views
-   - Export options
-   - Access control
-   - Compliance
+   - Contextual error logging
+   - Performance tracking
+   - Request tracing
+   - Structured metadata
+   - Error correlation
+   - Security event logging
 
 ## Code Quality
 

@@ -1,26 +1,26 @@
 import jwt from 'jsonwebtoken';
 import logger from '../config/logger.js';
 
-export function authenticateJWT(req, res, next) {
+export default function authenticateJWT(req, res, next) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    logger.warn('No authorization header present');
-    return res.status(401).json({ error: 'No authorization header' });
+    logger.warn('No authorization header provided');
+    return res.status(401).json({ error: 'No authorization header provided' });
   }
 
   const token = authHeader.split(' ')[1];
   if (!token) {
-    logger.warn('No token present in authorization header');
+    logger.warn('No token provided');
     return res.status(401).json({ error: 'No token provided' });
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+    const user = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = user;
     next();
   } catch (error) {
-    logger.error('JWT verification failed:', { error: error.message });
+    logger.warn('Invalid token:', { error: error.message });
     return res.status(401).json({ error: 'Invalid token' });
   }
 } 

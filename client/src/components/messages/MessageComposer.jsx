@@ -91,6 +91,18 @@ export default function MessageComposer({ onSend, placeholder = 'Message' }) {
     setIsFocused(false);
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      if (e.shiftKey) {
+        // Allow Shift+Enter for new line
+        return;
+      }
+      // Enter without shift submits the form
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
+
   return (
     <div ref={composerRef} className="flex flex-col">
       <form className="flex flex-col" onSubmit={handleSubmit} data-testid="message-form">
@@ -139,6 +151,7 @@ export default function MessageComposer({ onSend, placeholder = 'Message' }) {
                   isEmpty: !newValue.trim(),
                 });
               }}
+              onKeyDown={handleKeyDown}
               onFocus={handleFocus}
               onBlur={handleBlur}
               placeholder={placeholder}

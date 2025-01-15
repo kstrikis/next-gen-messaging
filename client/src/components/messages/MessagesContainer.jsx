@@ -14,7 +14,7 @@ export default function MessagesContainer({ type = 'channel', channelId }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    logger.info('🚀 MessagesContainer mounted', { type, channelId });
+    logger.info(`🚀 MessagesContainer mounted with type: ${type} and channelId: ${channelId}`);
 
     const fetchData = async () => {
       try {
@@ -35,10 +35,32 @@ export default function MessagesContainer({ type = 'channel', channelId }) {
 
         // Fetch channel info if in channel mode
         if (type === 'channel' && channelId) {
-          const channelResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/channels/${channelId}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          setChannel(channelResponse.data.channel);
+          // First try to get channel by ID
+          try {
+            const channelResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/channels/${channelId}`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            if (channelResponse.data.channel) {
+              setChannel(channelResponse.data.channel);
+              logger.info('📡 Channel fetched:', { 
+                channelName: channelResponse.data.channel.name,
+                channelId: channelId
+              });
+            }
+          } catch (error) {
+            // If channel not found by ID, try to get all channels and find general
+            const channelsResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/channels`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            const generalChannel = channelsResponse.data.channels.find(c => c.name === 'general');
+            if (generalChannel) {
+              setChannel(generalChannel);
+              logger.info('📡 Redirecting to general channel:', `channelName: ${generalChannel.name}, channelId: ${generalChannel.id}`);
+              window.location.href = `/channel/${generalChannel.id}`;
+            } else {
+              throw new Error('Channel not found and general channel not available');
+            }
+          }
         }
       } catch (error) {
         logger.error('Failed to fetch data:', error.response?.data?.error || error.message);
@@ -51,7 +73,7 @@ export default function MessagesContainer({ type = 'channel', channelId }) {
     fetchData();
 
     return () => {
-      logger.info('👋 MessagesContainer unmounting', { type, channelId });
+      logger.info('👋 MessagesContainer unmounting', `type: ${type}, channelId: ${channelId}`);
     };
   }, [type, channelId]);
 
@@ -77,14 +99,40 @@ export default function MessagesContainer({ type = 'channel', channelId }) {
     );
   }
 
-  const handleSendMessage = (message) => {
-    // This will be replaced with actual API call
-    logger.info('📨 Message received by container:', { 
-      message, 
-      type, 
-      channelId: channel?.name || channelId, 
-      timestamp: new Date().toISOString() 
-    });
+  const handleSendMessage = async (message) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      if (!channel) {
+        throw new Error('No active channel');
+      }
+
+      logger.info('📨 Sending message:', { 
+        message, 
+        channelId: channel.id,
+        timestamp: new Date().toISOString() 
+      });
+
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/channels/${channel.id}/messages`,
+        { content: message },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      logger.info('✅ Message sent successfully:', {
+        messageId: response.data.id,
+        channelId: channel.id,
+        timestamp: new Date().toISOString()
+      });
+
+      // TODO: Update message list with new message (will be handled by WebSocket)
+    } catch (error) {
+      logger.error('Failed to send message:', error.response?.data?.error || error.message);
+      setError(error.response?.data?.error || error.message);
+    }
   };
 
   return (
