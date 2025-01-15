@@ -58,7 +58,13 @@ export default function ChannelsList() {
 
   return (
     <div className="space-y-2 px-2">
-      {channels.map((channel) => (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-2">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+        </div>
+      ) : error ? (
+        <div className="px-2 py-1 text-sm text-red-500">{error}</div>
+      ) : channels.map((channel) => (
         <Button
           key={channel.id}
           variant="ghost"

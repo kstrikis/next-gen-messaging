@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { getInitials } from '@/lib/text';
-import { logger } from '@/utils/logger';
+import logger from '@/lib/logger';
 
 function ReactionButton({ emoji, count, users, isActive, onClick }) {
   return (
