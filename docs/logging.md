@@ -1,261 +1,91 @@
-# Logging System
+# Logging Configuration
 
-## Overview
+## Client Logger
 
-Our logging system uses two main components:
-
-- Backend: Winston with custom enhancements for development and debugging
-- Frontend: LogRocket for client-side logging and session replay
-
-## Frontend Logging (LogRocket)
+The client logger is a custom console wrapper that respects log levels and provides consistent formatting:
 
 ```javascript
 import logger from '@/lib/logger';
 
-// Basic logging
-logger.debug('Debug information');
-logger.info('Important information');
-logger.warn('Warning condition');
-logger.error('Error occurred');
+// Log levels in order of priority (lower number = higher priority)
+const LOG_LEVELS = {
+  error: 0, // Critical errors that need immediate attention
+  warn: 1, // Warnings about potential issues
+  info: 2, // General information about application state
+  debug: 3, // Detailed debugging information
+  state: 4, // State changes in components/stores
+  perf: 5, // Performance measurements
+  flow: 6, // User/data flow tracking
+  feature: 7, // New feature implementation logs
+};
 
-// Track user actions
-logger.track('button_click', { buttonId: 'send-message' });
+// Log level is determined by:
+// 1. process.env.LOG_LEVEL
+// 2. Defaults to 'warn' if not set
 ```
 
-LogRocket provides:
+## Test Environment
 
-- Session replay for debugging user issues
-- Performance monitoring
-- Error tracking with stack traces
-- Network request monitoring
-- Console logs capture
-- Redux state tracking
+In Cypress tests, logs are:
 
-### Configuration
+1. Filtered based on LOG_LEVEL in both:
+   - Cypress command log
+   - Browser console
+2. Aggregated per test
+3. Summarized after each test
+4. Network requests are captured
+5. Screenshots are taken on failure
 
-LogRocket is initialized with:
+## Server Logger
 
-```javascript
-LogRocket.init('chatgenius/prod');
-```
-
-### Best Practices
-
-1. Use appropriate log levels:
-
-   - `debug`: For development information
-   - `info`: For important operations
-   - `warn`: For concerning but non-critical issues
-   - `error`: For critical issues
-   - `track`: For user actions and events
-
-2. Include context in logs:
-
-   ```javascript
-   logger.debug('Message send attempt:', {
-     message,
-     channelId,
-     timestamp: new Date(),
-   });
-   ```
-
-3. Track important user actions:
-   ```javascript
-   logger.track('message_sent', {
-     channelId,
-     messageLength: message.length,
-     hasAttachments: attachments.length > 0,
-   });
-   ```
-
-## Backend Logging (Winston)
-
-## Log Levels
-
-Logs are organized by priority (0 being highest):
-
-| Level   | Priority | Purpose                                       |
-| ------- | -------- | --------------------------------------------- |
-| error   | 0        | Critical errors requiring immediate attention |
-| warn    | 1        | Warning conditions                            |
-| info    | 2        | General operational information               |
-| debug   | 3        | Detailed debugging information                |
-| state   | 4        | Application state changes                     |
-| perf    | 5        | Performance measurements                      |
-| flow    | 6        | User/data flow tracking                       |
-| feature | 7        | Feature implementation progress               |
-
-## Basic Usage
+The server uses Winston for structured logging:
 
 ```javascript
 import logger from '../config/logger.js';
 
-// Basic logging
-logger.error('Critical error occurred', { error });
-logger.warn('Resource running low', { resource: 'memory' });
-logger.info('Server started', { port: 3000 });
-logger.debug('Processing request', { requestId });
+// Log level is determined by process.env.LOG_LEVEL
+// Defaults to 'info' in development, 'warn' in test
+
+// Logs are written to:
+// 1. Console (all levels)
+// 2. error.log (error level)
+// 3. combined.log (info and above)
+// 4. development.log (all levels, only in development)
 ```
 
-## Helper Methods
+## Common Patterns
 
-Import helper methods for specialized logging:
-
-```javascript
-import loggerHelpers from '../config/loggerHelpers.js';
-
-// Track feature implementation
-const feature = loggerHelpers.startFeature('user-authentication');
-feature.step('validating input');
-feature.complete({ userId: 123 });
-// Or if it fails:
-feature.fail(error);
-
-// Track user/data flow
-const flow = loggerHelpers.trackFlow('checkout-process');
-flow.step('validating cart');
-flow.step('processing payment');
-flow.end({ orderId: 456 });
-
-// Measure performance
-const perf = loggerHelpers.measurePerf('database-query');
-await performQuery();
-perf.end({ queryType: 'SELECT', rows: 100 });
-
-// Track state changes
-const stateTracker = loggerHelpers.trackState('ShoppingCart');
-stateTracker.changed({ items: 2 }, { items: 3 }, { action: 'ADD_ITEM' });
-```
-
-## Log Files
-
-Logs are written to different files based on level and environment:
-
-- `error.log`: Contains only error-level logs
-- `combined.log`: Contains logs of info level and above
-- `development.log`: All logs in development environment
-
-## Development Features
-
-In development:
-
-- File and line numbers are automatically added to logs
-- Colorized console output
-- Detailed metadata formatting
-- Automatic performance measurements
-- Stack traces for errors
-
-## Production Features
-
-In production:
-
-- JSON-formatted logs for easy parsing
-- Reduced verbosity
-- Optimized for log aggregation
-- Automatic log rotation
-- Size-based log management
-
-## Best Practices
-
-1. **Use Appropriate Levels**
-
-   - `error`: Only for critical issues
-   - `warn`: For concerning but non-critical issues
-   - `info`: For important operations
-   - `debug`: For detailed troubleshooting
-
-2. **Include Context**
+1. Use appropriate log levels:
 
    ```javascript
-   // Good
-   logger.error('Database connection failed', {
-     host: db.host,
-     error: error.message,
-     attempt: retryCount,
-   });
-
-   // Bad
-   logger.error('Database connection failed');
+   logger.error('Critical failure', error);
+   logger.warn('Deprecated feature used', { feature });
+   logger.info('User logged in', { userId });
+   logger.debug('Processing request', { payload });
+   logger.state('Updated user preferences', { preferences });
+   logger.perf('API call duration', { endpoint, duration });
+   logger.flow('User started checkout', { cartId });
+   logger.feature('New UI component rendered', { component });
    ```
 
-3. **Use Helper Methods**
+2. Feature tracking:
 
-   - Use `startFeature` when implementing new features
-   - Use `trackFlow` for user journeys
-   - Use `measurePerf` for performance-critical code
-   - Use `trackState` for important state changes
+   ```javascript
+   const feature = logger.startFeature('checkout');
+   // ... feature code ...
+   feature.end(); // Logs feature completion
+   ```
 
-4. **Avoid Console.log**
-   - Always use the logger instead of console.log
-   - ESLint will enforce this
-
-## Configuration
-
-The logging system can be configured through environment variables:
-
-- `LOG_LEVEL`: Set the minimum log level
-- `NODE_ENV`: Determines development/production behavior
-
-## Log Rotation
-
-Logs are automatically rotated:
-
-- Maximum file size: 10MB
-- Maximum files kept: 5
-
-## Error Handling
-
-The logger includes special handling for:
-
-- Uncaught exceptions
-- Unhandled rejections
-- Graceful shutdown
-- Logging system errors
-- Node.js warnings (ExperimentalWarning and DeprecationWarning are automatically categorized as warnings)
-
-### Warning Handling
-
-Node.js process warnings (ExperimentalWarning and DeprecationWarning) are automatically detected and logged at the 'warn' level instead of 'error'. This ensures that:
-
-- Development warnings don't clutter error logs
-- Actual errors remain distinct from Node.js warnings
-- Warning messages maintain their visibility without triggering error alerts
-- Process stderr warnings are properly captured and categorized
-- Warnings in both direct messages and stderr data are handled consistently
-
-### Error Schema
-
-```javascript
-// Error log format
-{
-  level: 'error',
-  message: string,
-  timestamp: ISOString,
-  metadata: {
-    error: {
-      message: string,
-      stack: string,
-      type?: string
-    },
-    context?: {
-      route?: string,
-      requestId?: string,
-      userId?: string
-    }
-  }
-}
-
-// Error response format
-{
-  error: string,
-  code?: number,
-  details?: object
-}
-```
-
-### Testing Considerations
-
-- Use error middleware pattern with `next(error)`
-- Allow async operations to complete (100ms buffer)
-- Verify both response format and log entries
-- Use separate test log files
+3. Error handling:
+   ```javascript
+   try {
+     // ... code ...
+   } catch (error) {
+     logger.error('Operation failed', {
+       error,
+       context: {
+         /* relevant data */
+       },
+     });
+   }
+   ```

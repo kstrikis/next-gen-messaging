@@ -14,7 +14,7 @@ export default function MessagesContainer({ type = 'channel', channelId }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    logger.info('🚀 MessagesContainer mounted', { type, channelId });
+    logger.info(`🚀 MessagesContainer mounted with type: ${type} and channelId: ${channelId}`);
 
     const fetchData = async () => {
       try {
@@ -55,10 +55,7 @@ export default function MessagesContainer({ type = 'channel', channelId }) {
             const generalChannel = channelsResponse.data.channels.find(c => c.name === 'general');
             if (generalChannel) {
               setChannel(generalChannel);
-              logger.info('📡 Redirecting to general channel:', { 
-                channelName: generalChannel.name,
-                channelId: generalChannel.id
-              });
+              logger.info('📡 Redirecting to general channel:', `channelName: ${generalChannel.name}, channelId: ${generalChannel.id}`);
               window.location.href = `/channel/${generalChannel.id}`;
             } else {
               throw new Error('Channel not found and general channel not available');
@@ -76,7 +73,7 @@ export default function MessagesContainer({ type = 'channel', channelId }) {
     fetchData();
 
     return () => {
-      logger.info('👋 MessagesContainer unmounting', { type, channelId });
+      logger.info('👋 MessagesContainer unmounting', `type: ${type}, channelId: ${channelId}`);
     };
   }, [type, channelId]);
 

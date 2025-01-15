@@ -4,7 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { PrismaClient } from '@prisma/client';
 import logger from './config/logger.js';
-import authRoutes from './routes/auth.js';
+import authRoutes from './routes/auth.routes.js';
 import channelsRoutes from './routes/channels.js';
 import messagesRoutes from './routes/messages.js';
 import { setupWebSocketServer } from './socket/index.js';

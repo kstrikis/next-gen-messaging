@@ -72,10 +72,7 @@ export default function MessageList({ type = 'channel', channelId }) {
         }));
 
         setMessages(transformedMessages);
-        logger.info('📥 Messages fetched:', { 
-          channelId,
-          count: transformedMessages.length,
-        });
+        logger.info(`📥 Messages fetched: channelId: ${channelId}, count: ${transformedMessages.length}`);
       } catch (error) {
         logger.error('Failed to fetch messages:', error.response?.data?.error || error.message);
         setError(error.response?.data?.error || error.message);
@@ -121,14 +118,14 @@ export default function MessageList({ type = 'channel', channelId }) {
 
   if (messages.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex h-full items-center justify-center" data-testid="message-list-empty">
         <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col-reverse">
+    <div className="flex flex-col-reverse" data-testid="message-list-loaded">
       {/* Current Messages */}
       <div className="space-y-4">
         {Object.entries(messagesByDate).map(([date, dateMessages]) => (

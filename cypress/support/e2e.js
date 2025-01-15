@@ -28,30 +28,49 @@ Cypress.on('window:before:load', (win) => {
   // Track test name for better log organization
   const testTitle = Cypress.currentTest ? Cypress.currentTest.title : 'Unknown Test';
 
+  // Define log levels and their priorities
+  const LOG_LEVELS = {
+    error: 0,
+    warn: 1,
+    info: 2,
+    debug: 3
+  };
+
+  // Get configured log level from environment, default to 'warn'
+  const configuredLevel = Cypress.env('LOG_LEVEL') || process.env.LOG_LEVEL || 'warn';
+  const configuredPriority = LOG_LEVELS[configuredLevel.toLowerCase()] || LOG_LEVELS.warn;
+
   // Intercept all console methods
   ['log', 'warn', 'error', 'info', 'debug'].forEach(method => {
     const originalMethod = win.console[method];
     win.console[method] = (...args) => {
-      const logEntry = {
-        test: testTitle,
-        type: method,
-        timestamp: new Date().toISOString(),
-        args: args.map(arg => 
-          typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-        )
-      };
-      win.testLogs.console.push(logEntry);
+      // Determine if this log level should be shown
+      const methodPriority = LOG_LEVELS[method] || LOG_LEVELS.info; // Default unknown methods to info level
+      const shouldLog = methodPriority <= configuredPriority;
 
-      // Log to Cypress command log immediately
-      Cypress.log({
-        name: 'console',
-        displayName: `🖥️ ${method.toUpperCase()}`,
-        message: args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' '),
-        consoleProps: () => logEntry
-      });
+      // Only collect logs and show in Cypress UI if within configured level
+      if (shouldLog) {
+        const logEntry = {
+          test: testTitle,
+          type: method,
+          timestamp: new Date().toISOString(),
+          args: args.map(arg => 
+            typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+          )
+        };
+        win.testLogs.console.push(logEntry);
 
-      // Call original console method
-      originalMethod.apply(win.console, args);
+        // Log to Cypress command log immediately
+        Cypress.log({
+          name: 'console',
+          displayName: `🖥️ ${method.toUpperCase()}`,
+          message: args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' '),
+          consoleProps: () => logEntry
+        });
+
+        // Only call original console method if within configured level
+        originalMethod.apply(win.console, args);
+      }
     };
   });
 
@@ -212,8 +231,18 @@ Cypress.Commands.add('ws', {
 
 // Intercept API calls for better testing
 beforeEach(() => {
-  // Intercept all API calls to our backend
-  cy.intercept(`${Cypress.env('apiUrl')}/**`).as('apiCall');
+  // Start from a clean slate
+  cy.clearLocalStorage();
+  
+  // Set up global API monitoring - use a parent command first
+  cy.intercept(`${Cypress.env('apiUrl')}/**`, (req) => {
+    // Log the request for debugging
+    Cypress.log({
+      name: 'API Call',
+      message: `${req.method} ${req.url}`,
+      consoleProps: () => ({ request: req })
+    });
+  });
 });
 
 // Log failed requests for debugging

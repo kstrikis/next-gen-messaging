@@ -6,6 +6,7 @@ export default defineConfig({
     env: {
       apiUrl: 'http://localhost:3001',
       wsUrl: 'ws://localhost:3001',
+      LOG_LEVEL: process.env.LOG_LEVEL || 'warn',
     },
     specPattern: 'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}',
     supportFile: 'cypress/support/e2e.js',

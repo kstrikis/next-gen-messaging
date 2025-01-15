@@ -62,12 +62,37 @@ describe('ProtectedRoute', () => {
       getAccessTokenSilently: mockGetToken
     });
 
-    axios.get.mockResolvedValueOnce({ data: { user: { id: 1 } } });
+    // Mock successful token exchange
+    axios.get.mockImplementation((url) => {
+      if (url.includes('/api/auth/auth0/callback')) {
+        return Promise.resolve({ data: { token: 'exchanged-token' } });
+      }
+      if (url.includes('/api/auth/me')) {
+        return Promise.resolve({ data: { user: { id: 1 } } });
+      }
+      return Promise.reject(new Error(`Unexpected URL: ${url}`));
+    });
 
-    render(<ProtectedRoute>Test Content</ProtectedRoute>);
+    const WrappedComponent = () => (
+      <div data-testid="protected-content">Protected Page Content</div>
+    );
+    render(
+      <ProtectedRoute>
+        <WrappedComponent />
+      </ProtectedRoute>
+    );
 
+    // First we should see the loading spinner
+    expect(screen.getByRole('status')).toBeInTheDocument();
+
+    // Wait for token exchange and storage
     await waitFor(() => {
-      expect(screen.getByText('Test Content')).toBeInTheDocument();
+      expect(localStorage.getItem('token')).toBe('exchanged-token');
+    });
+
+    // Then we should see the protected content
+    await waitFor(() => {
+      expect(screen.getByTestId('protected-content')).toBeInTheDocument();
     });
 
     expect(mockGetToken).toHaveBeenCalled();
@@ -102,16 +127,45 @@ describe('ProtectedRoute', () => {
     }));
   });
 
-  it('shows content when has guest token', () => {
+  it('shows content when has valid guest token', async () => {
     useAuth0.mockReturnValue({
       isLoading: false,
       isAuthenticated: false,
       getAccessTokenSilently: jest.fn()
     });
 
+    // Mock successful token verification
+    axios.get.mockImplementation((url) => {
+      if (url.includes('/api/auth/me')) {
+        return Promise.resolve({ data: { user: { id: 1 } } });
+      }
+      return Promise.reject(new Error(`Unexpected URL: ${url}`));
+    });
+
     localStorage.setItem('token', 'test-token');
-    render(<ProtectedRoute>Test Content</ProtectedRoute>);
-    expect(screen.getByText('Test Content')).toBeInTheDocument();
-    expect(mockPush).not.toHaveBeenCalled();
+    
+    const WrappedComponent = () => (
+      <div data-testid="protected-content">Protected Page Content</div>
+    );
+    render(
+      <ProtectedRoute>
+        <WrappedComponent />
+      </ProtectedRoute>
+    );
+
+    // First we should see the loading spinner
+    expect(screen.getByRole('status')).toBeInTheDocument();
+
+    // Then we should see the protected content after token verification
+    await waitFor(() => {
+      expect(screen.getByTestId('protected-content')).toBeInTheDocument();
+    });
+
+    expect(axios.get).toHaveBeenCalledWith(
+      expect.stringContaining('/api/auth/me'),
+      expect.objectContaining({
+        headers: { Authorization: 'Bearer test-token' }
+      })
+    );
   });
 }); 

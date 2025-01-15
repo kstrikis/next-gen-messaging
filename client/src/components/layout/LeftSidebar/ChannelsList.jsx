@@ -32,7 +32,7 @@ export default function ChannelsList() {
         );
 
         setChannels(response.data.channels);
-        logger.info('📥 Channels fetched:', { count: response.data.channels.length });
+        logger.info('📥 Channels fetched:', `count: ${response.data.channels.length}`);
 
         // Find and set general channel as active if no channel is currently active
         const generalChannel = response.data.channels.find(c => c.name === 'general');
