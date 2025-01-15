@@ -5,12 +5,19 @@ import logger from '../config/logger.js';
 
 const prisma = new PrismaClient();
 
-const generateToken = (userId, isGuest = false) =>
-  jwt.sign(
-    { userId, isGuest },
-    process.env.JWT_SECRET,
+const generateToken = (userId, isGuest = false) => {
+  // Ensure userId is a string
+  const userIdStr = String(userId);
+  
+  // Log token payload for debugging
+  logger.debug('Generating token:', { userId: userIdStr, isGuest });
+  
+  return jwt.sign(
+    { userId: userIdStr, isGuest },
+    process.env.JWT_SECRET || 'dev-jwt-secret-do-not-use-in-production',
     { expiresIn: '24h' }
   );
+};
 
 const ANONYMOUS_ANIMALS = [
   'Aardvark', 'Albatross', 'Alligator', 'Alpaca', 'Ant', 'Anteater', 'Antelope', 'Ape', 'Armadillo', 'Donkey',

@@ -9,6 +9,8 @@ const prisma = new PrismaClient();
 const onlineUsers = new Map(); // userId -> Set<socketId>
 const userSockets = new Map(); // socketId -> userId
 
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-jwt-secret-do-not-use-in-production';
+
 export function setupWebSocketServer(httpServer) {
   const io = new Server(httpServer, {
     cors: {
@@ -22,24 +24,97 @@ export function setupWebSocketServer(httpServer) {
   // Authentication middleware
   io.use(async (socket, next) => {
     try {
-      const token = socket.handshake.auth.token;
+      const token = socket.handshake.auth.token || socket.handshake.query.token;
       if (!token) {
+        logger.error('Socket auth: No token provided');
         return next(new Error('Authentication token required'));
       }
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      socket.userId = decoded.userId;
-      socket.isGuest = decoded.isGuest;
+      let decoded;
+      try {
+        decoded = jwt.verify(token, JWT_SECRET);
+        
+        // Handle both userId and id formats
+        let userId = decoded.userId || decoded.id;
+        
+        // Convert to string if it exists but isn't a string
+        if (userId && typeof userId !== 'string') {
+          userId = String(userId);
+        }
 
-      // Update user's last seen
-      await prisma.user.update({
-        where: { id: socket.userId },
-        data: { lastSeen: new Date() }
-      });
+        logger.info('Socket auth: Token decoded:', { 
+          decodedToken: JSON.stringify(decoded, null, 2),
+          tokenKeys: Object.keys(decoded),
+          hasUserId: 'userId' in decoded,
+          hasId: 'id' in decoded,
+          userId,
+          isGuest: decoded.isGuest
+        });
 
-      next();
+        // Validate token structure
+        if (!decoded || typeof decoded !== 'object') {
+          logger.error('Socket auth: Invalid token structure', { 
+            decoded,
+            type: typeof decoded 
+          });
+          return next(new Error('Invalid token structure'));
+        }
+
+        if (!userId) {
+          logger.error('Socket auth: Missing userId in token', { 
+            decoded: JSON.stringify(decoded, null, 2),
+            hasUserId: 'userId' in decoded,
+            hasId: 'id' in decoded
+          });
+          return next(new Error('Invalid token structure'));
+        }
+
+        // Store user info in socket
+        socket.userId = userId;
+        socket.isGuest = !!decoded.isGuest; // Ensure boolean
+
+        // Verify user exists
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          select: {
+            id: true,
+            username: true,
+            isGuest: true,
+            lastSeen: true
+          }
+        });
+
+        if (!user) {
+          logger.error('Socket auth: User not found', { userId });
+          return next(new Error('User not found'));
+        }
+
+        // Update user's last seen
+        await prisma.user.update({
+          where: { id: userId },
+          data: { lastSeen: new Date() }
+        });
+
+        logger.info('Socket authenticated:', { 
+          userId,
+          socketId: socket.id,
+          isGuest: socket.isGuest,
+          username: user.username
+        });
+        next();
+      } catch (jwtError) {
+        logger.error('Socket auth: JWT verification failed', { 
+          error: jwtError.message,
+          token: token.substring(0, 10) + '...' // Log only first 10 chars for debugging
+        });
+        return next(new Error('Invalid authentication token'));
+      }
     } catch (error) {
-      logger.error('Socket authentication error:', { error: error.message });
+      logger.error('Socket authentication error:', { 
+        error: error.message, 
+        stack: error.stack,
+        type: error.constructor.name
+      });
       next(new Error('Authentication failed'));
     }
   });

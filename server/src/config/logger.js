@@ -55,7 +55,7 @@ const devFormat = winston.format.combine(
     
     // Handle string messages and metadata
     if (typeof message === 'object') {
-      msg += ' ' + JSON.stringify(message);
+      msg += ' ' + JSON.stringify(message, null, 2);
     } else {
       msg += ' ' + message;
     }
@@ -65,7 +65,7 @@ const devFormat = winston.format.combine(
       const cleanMetadata = { ...metadata };
       delete cleanMetadata.splat;
       msg += ' ' + Object.entries(cleanMetadata)
-        .map(([key, value]) => `${key}=${value}`)
+        .map(([key, value]) => `${key}=${typeof value === 'object' ? JSON.stringify(value, null, 2) : value}`)
         .join(' ');
     }
     

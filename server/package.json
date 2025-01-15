@@ -7,9 +7,9 @@
     "test": "tests"
   },
   "scripts": {
-    "dev": "dotenvx run --env-file=.env.development -- sh -c 'NODE_OPTIONS=\"--no-deprecation --disable-warning=ExperimentalWarning\" nodemon src/index.js -p ${SERVER_PORT:-3001}'",
-    "start": "dotenvx run --env-file=.env -- echo \"Starting server...\" && node src/index.js -p ${SERVER_PORT:-3001}",
-    "start:test": "dotenvx run --env-file=.env.test -- echo \"🔍 Environment variables:\" && printenv | grep -E 'NODE_ENV|DATABASE_URL' && echo \"🔧 Setting up test database...\" && node scripts/setup-test-db.js && echo \"🚀 Starting server with test configuration...\" && NODE_OPTIONS='--no-deprecation --disable-warning=ExperimentalWarning' nodemon src/index.js -p ${SERVER_PORT:-3001}",
+    "dev": "dotenvx run --env-file=.env.development -- sh -c 'NODE_OPTIONS=\"--no-deprecation --disable-warning=ExperimentalWarning\" nodemon src/index.js'",
+    "start": "dotenvx run --env-file=.env -- echo \"Starting server...\" && node src/index.js",
+    "start:test": "dotenvx run --env-file=.env.test -- echo \"🔍 Environment variables:\" && printenv | grep -E 'NODE_ENV|DATABASE_URL' && echo \"🔧 Setting up test database...\" && node scripts/setup-test-db.js && echo \"🚀 Starting server with test configuration...\" && NODE_OPTIONS='--no-deprecation --disable-warning=ExperimentalWarning' nodemon src/index.js",
     "debug:env": "echo \"Server Before dotenvx:\" && printenv | grep -E 'NODE_ENV|DATABASE_URL' && echo \"\nServer After dotenvx:\" && dotenvx run --env-file=.env.test -- printenv | grep -E 'NODE_ENV|DATABASE_URL' && echo \"\nServer Node Process:\" && dotenvx run --env-file=.env.test -- node -e \"console.log('NODE_ENV=' + process.env.NODE_ENV)\" && echo \"\nServer Nodemon Process:\" && dotenvx run --env-file=.env.test -- nodemon --exitcrash --exec \"node -e \\\"console.log('NODE_ENV=' + process.env.NODE_ENV)\\\"\"",
     "test": "jest",
     "test:watch": "jest --watch",

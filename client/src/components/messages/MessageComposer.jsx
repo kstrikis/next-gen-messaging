@@ -9,15 +9,23 @@ import {
   AtSign,
   Send,
 } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { cn } from '@/lib/utils';
 import logger from '@/lib/logger';
 
-export default function MessageComposer({ onSend, placeholder = 'Message' }) {
+export default function MessageComposer({ onSend, placeholder = 'Message', error = null }) {
   const [message, setMessage] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const composerRef = useRef(null);
   const textareaRef = useRef(null);
+
+  // Clear error when message changes
+  useEffect(() => {
+    if (error && message.trim()) {
+      onSend(message.trim());
+    }
+  }, [message, error, onSend]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -155,7 +163,10 @@ export default function MessageComposer({ onSend, placeholder = 'Message' }) {
               onFocus={handleFocus}
               onBlur={handleBlur}
               placeholder={placeholder}
-              className="block w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className={cn(
+                "block w-full resize-none rounded-lg border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring",
+                error ? "border-red-500 focus:ring-red-500" : "border-border"
+              )}
               rows={1}
               style={{
                 minHeight: '40px',
@@ -168,6 +179,11 @@ export default function MessageComposer({ onSend, placeholder = 'Message' }) {
                 e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
               }}
             />
+
+            {/* Error Message */}
+            {error && (
+              <p className="absolute -bottom-6 left-0 text-sm text-red-500">{error}</p>
+            )}
 
             {/* Quick Actions */}
             <div className="absolute bottom-2 right-2 flex items-center gap-2">
@@ -216,8 +232,10 @@ export default function MessageComposer({ onSend, placeholder = 'Message' }) {
 MessageComposer.propTypes = {
   onSend: PropTypes.func.isRequired,
   placeholder: PropTypes.string,
+  error: PropTypes.string,
 };
 
 MessageComposer.defaultProps = {
   placeholder: 'Message',
+  error: null,
 }; 

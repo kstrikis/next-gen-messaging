@@ -6,12 +6,14 @@ import axios from 'axios';
 import MessageList from './MessageList';
 import MessageComposer from './MessageComposer';
 import logger from '@/lib/logger';
+import socketService from '@/lib/socket';
 
 export default function MessagesContainer({ type = 'channel', channelId }) {
   const [user, setUser] = useState(null);
   const [channel, setChannel] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [socketError, setSocketError] = useState(null);
 
   useEffect(() => {
     logger.info(`🚀 MessagesContainer mounted with type: ${type} and channelId: ${channelId}`);
@@ -20,6 +22,7 @@ export default function MessagesContainer({ type = 'channel', channelId }) {
       try {
         setIsLoading(true);
         setError(null);
+        setSocketError(null);
 
         // Get user info from token
         const token = localStorage.getItem('token');
@@ -62,6 +65,17 @@ export default function MessagesContainer({ type = 'channel', channelId }) {
             }
           }
         }
+
+        // Initialize socket connection and handle errors
+        socketService.connect();
+        const unsubscribeError = socketService.onError((error) => {
+          logger.error('Socket error in MessagesContainer:', error);
+          setSocketError(error);
+        });
+
+        return () => {
+          unsubscribeError();
+        };
       } catch (error) {
         logger.error('Failed to fetch data:', error.response?.data?.error || error.message);
         setError(error.response?.data?.error || error.message);
@@ -74,6 +88,7 @@ export default function MessagesContainer({ type = 'channel', channelId }) {
 
     return () => {
       logger.info('👋 MessagesContainer unmounting', `type: ${type}, channelId: ${channelId}`);
+      socketService.disconnect();
     };
   }, [type, channelId]);
 
@@ -101,14 +116,11 @@ export default function MessagesContainer({ type = 'channel', channelId }) {
 
   const handleSendMessage = async (message) => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-
       if (!channel) {
         throw new Error('No active channel');
       }
+
+      setSocketError(null);
 
       logger.info('📨 Sending message:', { 
         message, 
@@ -116,22 +128,11 @@ export default function MessagesContainer({ type = 'channel', channelId }) {
         timestamp: new Date().toISOString() 
       });
 
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/channels/${channel.id}/messages`,
-        { content: message },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      logger.info('✅ Message sent successfully:', {
-        messageId: response.data.id,
-        channelId: channel.id,
-        timestamp: new Date().toISOString()
-      });
-
-      // TODO: Update message list with new message (will be handled by WebSocket)
+      // Send message through socket
+      socketService.sendMessage(channel.id, message);
     } catch (error) {
-      logger.error('Failed to send message:', error.response?.data?.error || error.message);
-      setError(error.response?.data?.error || error.message);
+      logger.error('Failed to send message:', error.message);
+      setSocketError(error.message);
     }
   };
 
@@ -168,7 +169,8 @@ export default function MessagesContainer({ type = 'channel', channelId }) {
       <div className="border-t border-border">
         <MessageComposer 
           onSend={handleSendMessage} 
-          placeholder={`Message ${type === 'dm' ? 'user' : channel ? `#${channel.name}` : 'channel'}`} 
+          placeholder={`Message ${type === 'dm' ? 'user' : channel ? `#${channel.name}` : 'channel'}`}
+          error={socketError}
         />
       </div>
     </div>
