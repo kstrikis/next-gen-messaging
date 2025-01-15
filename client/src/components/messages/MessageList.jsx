@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import Message from './Message';
 import logger from '@/lib/logger';
+import socketService from '@/lib/socket';
 
 function DateDivider({ date }) {
   return (
@@ -33,6 +34,12 @@ export default function MessageList({ type = 'channel', channelId }) {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [hasNewMessages, setHasNewMessages] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -73,6 +80,7 @@ export default function MessageList({ type = 'channel', channelId }) {
 
         setMessages(transformedMessages);
         logger.info(`📥 Messages fetched: channelId: ${channelId}, count: ${transformedMessages.length}`);
+        scrollToBottom();
       } catch (error) {
         logger.error('Failed to fetch messages:', error.response?.data?.error || error.message);
         setError(error.response?.data?.error || error.message);
@@ -82,7 +90,81 @@ export default function MessageList({ type = 'channel', channelId }) {
     };
 
     fetchMessages();
+
+    // Subscribe to real-time message updates
+    const messageHandler = (message) => {
+      setMessages(prevMessages => {
+        // Check if message already exists
+        if (prevMessages.some(m => m.id === message.id)) {
+          return prevMessages;
+        }
+
+        // Transform the message to match our format
+        const newMessage = {
+          id: message.id,
+          content: message.content,
+          timestamp: new Date(message.createdAt),
+          user: {
+            name: message.sender.username,
+            avatar: null,
+            isOnline: true,
+          },
+          reactions: message.reactions?.map(reaction => ({
+            emoji: reaction.emoji,
+            count: 1,
+            users: [reaction.user.username],
+          })) || [],
+        };
+
+        const updatedMessages = [...prevMessages, newMessage];
+        logger.info('📨 New message received:', { messageId: message.id });
+        setHasNewMessages(true);
+        return updatedMessages;
+      });
+    };
+
+    // Subscribe to reaction updates
+    const reactionHandler = (data) => {
+      setMessages(prevMessages => {
+        return prevMessages.map(message => {
+          if (message.id !== data.messageId) return message;
+
+          let updatedReactions = [...(message.reactions || [])];
+
+          if (data.type === 'add') {
+            updatedReactions.push({
+              emoji: data.reaction.emoji,
+              count: 1,
+              users: [data.reaction.user.username],
+            });
+          } else {
+            updatedReactions = updatedReactions.filter(r => r.id !== data.reactionId);
+          }
+
+          return {
+            ...message,
+            reactions: updatedReactions,
+          };
+        });
+      });
+    };
+
+    const unsubscribeMessage = socketService.onMessage(messageHandler);
+    const unsubscribeReaction = socketService.onReaction(reactionHandler);
+
+    return () => {
+      unsubscribeMessage();
+      unsubscribeReaction();
+    };
   }, [channelId, type]);
+
+  // Auto-scroll when new messages arrive
+  useEffect(() => {
+    if (hasNewMessages) {
+      scrollToBottom();
+      setHasNewMessages(false);
+    }
+  }, [hasNewMessages]);
 
   if (isLoading) {
     return (
@@ -140,14 +222,8 @@ export default function MessageList({ type = 'channel', channelId }) {
         ))}
       </div>
 
-      {/* New Message Indicator - TODO: Implement with WebSocket */}
-      {/* <div className="sticky top-0 z-10 mx-4 mb-4">
-        <div className="flex items-center justify-center">
-          <div className="rounded-full bg-primary px-2 py-1 text-xs font-medium text-primary-foreground">
-            New Messages
-          </div>
-        </div>
-      </div> */}
+      {/* Messages end marker for scrolling */}
+      <div ref={messagesEndRef} />
     </div>
   );
 }

@@ -61,6 +61,7 @@ export default function Message({ message }) {
       className="group relative flex items-start space-x-3 px-4 py-2 hover:bg-muted/50"
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
+      data-testid={`message-${message.id}`}
     >
       <Avatar className="h-9 w-9">
         {message.user.avatar ? (
@@ -72,8 +73,8 @@ export default function Message({ message }) {
 
       <div className="flex-1 space-y-1">
         <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium">{message.user.name}</span>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-sm font-medium" data-testid="message-author">{message.user.name}</span>
+          <span className="text-xs text-muted-foreground" data-testid="message-timestamp">
             {message.timestamp.toLocaleTimeString(undefined, {
               hour: 'numeric',
               minute: '2-digit',
@@ -81,7 +82,7 @@ export default function Message({ message }) {
           </span>
         </div>
 
-        <div className="text-sm">{message.content}</div>
+        <div className="text-sm" data-testid="message-content">{message.content}</div>
 
         {message.reactions && message.reactions.length > 0 && (
           <div className="flex flex-wrap gap-1 pt-1">

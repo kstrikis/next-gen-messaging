@@ -235,6 +235,11 @@
    - Messages:
      - MessageList: grouped by date
      - Message: user info, reactions, actions
+       - Test attributes:
+         - data-testid="message-{id}": Unique message container
+         - data-testid="message-author": Username display
+         - data-testid="message-timestamp": Message timestamp
+         - data-testid="message-content": Message text content
      - MessageComposer: rich text, emojis, attachments
    - Activity:
      - Tabbed interface for notifications/activity
@@ -243,14 +248,17 @@
 ## Testing Configuration
 
 - E2E tests run locally with 'npm run test:e2e'
-- Environment variables loaded from .env.test using dotenvx
-- Frontend: localhost:3000
-- Backend: localhost:3001
-- Test cleanup:
-  - Kills processes on ports 3000 and 3001
-  - Removes nodemon and dev processes
-  - Uses trap for cleanup on exit
-- Health checks before test execution
+- Latest test run (successful):
+  - Total: 18 tests across 5 spec files
+  - Passing: 17 tests
+  - Pending: 1 test (message-composer component mount logging)
+  - Coverage:
+    - Guest authentication (6 tests)
+    - API endpoints (4 tests)
+    - Message composer (6 tests)
+    - Message display (2 tests)
+  - Known warnings: "Channel not found channelId=general" during tests
+  - Average run time: 36 seconds
 
 ### Known Issues
 
@@ -285,6 +293,24 @@
     - MessageComposer unit tests
     - MessageComposer E2E tests
     - Component mount logging tests
+
+### Message Tests
+
+1. End-to-End Tests:
+   - Message sending and display:
+     - Verifies messages appear after sending
+     - Checks message order is preserved
+     - Tests long message handling
+     - Validates special character support (Unicode, emojis)
+   - Required data-testid attributes:
+     - message-list: Container for messages
+     - message-input: Text input for new messages
+     - guest-login-button: Guest login button
+   - Test scenarios:
+     - Basic message sending and display
+     - Multiple message ordering
+     - Long message wrapping
+     - Special character rendering
 
 ## Logging Configuration
 
@@ -936,117 +962,65 @@ Required Configuration:
    - Connects all users to general channel
    - Test database includes sample users of each type
 
-## Real-time Messaging Implementation - IN PROGRESS
-
-### Database Schema - COMPLETED
-
-1. Message Model:
-
-   - id: UUID
-   - content: String
-   - senderId: String (User relation)
-   - channelId: String (Channel relation)
-   - isEdited: Boolean
-   - isPinned: Boolean
-   - createdAt: DateTime
-   - updatedAt: DateTime
-   - reactions: Reaction[] relation
-   - mentions: User[] relation
-   - Indexes on senderId, channelId, and createdAt
-
-2. Reaction Model:
-
-   - id: UUID
-   - emoji: String
-   - userId: String (User relation)
-   - messageId: String (Message relation)
-   - createdAt: DateTime
-   - Unique constraint on [userId, messageId, emoji]
-   - Indexes on userId and messageId
-
-3. Updated Relations:
-   - User model:
-     - messages: Message[] (sent messages)
-     - reactions: Reaction[] (message reactions)
-     - mentions: Message[] (messages mentioning user)
-   - Channel model:
-     - messages: Message[] (channel messages)
-
-### API Implementation - COMPLETED
-
-1. Message Endpoints:
-
-   - GET /api/channels/:channelId/messages - Get channel messages with pagination
-   - POST /api/channels/:channelId/messages - Send new message
-   - PUT /api/messages/:messageId - Edit message
-   - DELETE /api/messages/:messageId - Delete message
-   - POST /api/messages/:messageId/reactions - Add reaction
-   - DELETE /api/messages/:messageId/reactions/:reactionId - Remove reaction
-
-2. Features:
-   - Pagination support with cursor-based pagination
-   - Message mentions with @ symbol
-   - Reaction management with unique constraints
-   - Proper error handling and logging
-   - Automatic mention extraction from content
-
-### WebSocket Implementation - COMPLETED
+## Real-time Messaging Implementation
 
 1. Socket.IO Setup:
 
-   - Namespace: /chat (default)
-   - Authentication via JWT
-   - CORS configuration matching REST API
-   - Room per channel (`channel:${channelId}`)
-   - Connection state management
-   - Automatic channel joining on connection
+   - Server:
+     - Handles authentication via JWT
+     - Manages user presence tracking
+     - Broadcasts messages to channel rooms
+     - Handles typing indicators
+     - Supports message reactions
+     - Updates user last seen
+   - Client:
+     - Singleton socket service
+     - Auto-reconnection support
+     - Event handler registration
+     - Connection state management
+     - Secure token authentication
 
-2. Events:
+2. Message Flow:
 
-   - message:send - Send new message
-   - message:received - Broadcast new message
-   - message:reaction - Add/remove reaction
-   - message:reaction:added - Broadcast new reaction
-   - message:reaction:removed - Broadcast removed reaction
-   - user:typing - Typing indicator
-   - user:online - User connection status
-   - user:offline - User disconnection status
-   - user:mentioned - Mention notification
+   - Send:
+     - Client emits 'message:send' event
+     - Server validates and stores message
+     - Server broadcasts to channel room
+     - Sender receives confirmation
+   - Receive:
+     - Client subscribes to channel room
+     - Server broadcasts new messages
+     - Client updates UI in real-time
+     - Auto-scrolls to new messages
 
 3. Features:
+
    - Real-time message delivery
    - Typing indicators
-   - Online presence tracking
-   - Multi-device support per user
-   - Automatic channel room management
-   - Last seen tracking
-   - Mention notifications
-   - Reaction synchronization
+   - Message reactions
+   - User presence (online/offline)
+   - Channel-based message rooms
+   - Automatic reconnection
+   - Error handling and logging
 
-### Next Steps:
+4. Components:
 
-1. Frontend Implementation:
+   - MessagesContainer:
+     - Manages socket connection
+     - Handles message sending
+     - Channel subscription
+   - MessageList:
+     - Real-time message updates
+     - Message grouping by date
+     - Smooth scrolling
+     - Reaction updates
 
-   - Message list component
-   - Message composer
-   - Real-time updates integration
-   - Typing indicator UI
-   - Reaction picker
-   - Mention suggestions
-
-2. Testing:
-
-   - WebSocket connection tests
-   - Message flow integration tests
-   - Reaction handling tests
+5. Testing:
+   - Socket event mocking
+   - Connection state tests
+   - Message delivery tests
+   - Error handling tests
    - Presence tracking tests
-
-3. Performance Optimization:
-   - Message batching
-   - Pagination implementation
-   - Connection pooling
-   - Error recovery
-   - Reconnection handling
 
 ## Database Management
 

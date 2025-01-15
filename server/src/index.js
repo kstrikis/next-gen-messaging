@@ -11,7 +11,7 @@ import { setupWebSocketServer } from './socket/index.js';
 
 logger.info('📊 Server configuration:', { 
   nodeEnv: process.env.NODE_ENV,
-  port: process.env.SERVER_PORT || 3001,
+  port: process.env.PORT ? process.env.SERVER_PORT : 3001,
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
   databaseUrl: process.env.DATABASE_URL
 });
@@ -35,7 +35,7 @@ if (missingEnvVars.length > 0) {
 }
 
 const app = express();
-const port = process.env.SERVER_PORT || 3001;
+const port = process.env.PORT ? process.env.SERVER_PORT : 3001;
 
 logger.info('Server configuration:', { 
   port,
@@ -215,6 +215,26 @@ async function gracefulShutdown(signal) {
   logger.info('Initiating graceful shutdown...', { signal });
   
   try {
+    // Force immediate shutdown on Ctrl+C
+    if (signal === 'SIGINT') {
+      logger.info('Received Ctrl+C, forcing immediate shutdown');
+      if (io) {
+        io.close();
+        logger.info('WebSocket server closed');
+      }
+      if (prisma) {
+        await prisma.$disconnect();
+        logger.info('Database disconnected');
+      }
+      process.exit(0);
+    }
+
+    // For other signals, attempt graceful shutdown
+    if (io) {
+      io.close();
+      logger.info('WebSocket server closed');
+    }
+
     // Close server first (stop accepting new connections)
     await new Promise((resolve, reject) => {
       server.close((err) => {
