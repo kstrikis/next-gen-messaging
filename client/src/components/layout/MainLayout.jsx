@@ -8,7 +8,7 @@ import TopBar from './TopBar';
 
 export default function MainLayout({ children }) {
   const [showLeftSidebar, setShowLeftSidebar] = useState(true);
-  const [showRightSidebar, setShowRightSidebar] = useState(false);
+  const [showRightSidebar] = useState(false);
   const pathname = usePathname();
 
   // Extract channel ID from pathname if it's a channel route

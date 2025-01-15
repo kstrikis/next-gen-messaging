@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import Link from 'next/link';
 import axios from 'axios';
 import logger from '@/lib/logger';
 

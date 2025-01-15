@@ -12,22 +12,29 @@ export default function ChannelsList() {
   const [channels, setChannels] = useState([]);
   const [activeChannel, setActiveChannel] = useState(null);
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchChannels = async () => {
       try {
+        setIsLoading(true);
+        setError(null);
+
         const token = localStorage.getItem('token');
         if (!token) {
-          logger.warn('No token found, cannot fetch channels');
-          return;
+          throw new Error('No authentication token found');
         }
 
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/channels`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setChannels(response.data.channels);
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/channels`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-        // Find general channel and set it as active if no active channel
+        setChannels(response.data.channels);
+        logger.info('📥 Channels fetched:', { count: response.data.channels.length });
+
+        // Find and set general channel as active if no channel is currently active
         const generalChannel = response.data.channels.find(c => c.name === 'general');
         if (generalChannel && !activeChannel) {
           setActiveChannel(generalChannel.id);
@@ -35,11 +42,14 @@ export default function ChannelsList() {
         }
       } catch (error) {
         logger.error('Failed to fetch channels:', error.response?.data?.error || error.message);
+        setError(error.response?.data?.error || error.message);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchChannels();
-  }, []);
+  }, [activeChannel, router]);
 
   const handleChannelClick = (channel) => {
     setActiveChannel(channel.id);

@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { getInitials } from '@/lib/text';
+import { logger } from '@/utils/logger';
 
 function ReactionButton({ emoji, count, users, isActive, onClick }) {
   return (
@@ -51,8 +52,8 @@ export default function Message({ message }) {
   const [showActions, setShowActions] = useState(false);
 
   const handleReactionClick = (emoji) => {
+    logger.info('Reaction clicked:', { emoji });
     // TODO: Implement reaction handling
-    console.log('Reaction clicked:', emoji);
   };
 
   return (
