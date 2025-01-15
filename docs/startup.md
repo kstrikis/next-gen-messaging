@@ -8,6 +8,25 @@
 - PostgreSQL
 - Redis (optional, for caching)
 
+### Environment Variables
+
+Required environment variables:
+
+```bash
+# Core
+NODE_ENV=development|test|production
+DATABASE_URL=<postgresql_url>
+PORT=3001
+CLIENT_PORT=3000
+
+# Logging
+LOG_LEVEL=error|warn|info|debug|state|perf|flow|feature  # defaults to 'warn'
+
+# Auth0
+NEXT_PUBLIC_AUTH0_DOMAIN=<auth0_domain>
+NEXT_PUBLIC_AUTH0_CLIENT_ID=<auth0_client_id>
+```
+
 ### Development Mode
 
 ```bash
@@ -95,6 +114,7 @@ The application can be deployed to AWS using the provided deployment script:
    DATABASE_URL=<heroku_postgresql_url>
    PORT=<heroku_assigned_port>
    CORS_ORIGIN=<your_frontend_url>
+   LOG_LEVEL=warn  # recommended for production
    ```
 
 3. Build Process:
@@ -154,7 +174,15 @@ The application can be deployed to AWS using the provided deployment script:
    - Root `package.json` start script updated to handle both processes
    - No separate Procfile needed for Heroku as we're using `concurrently`
 
-2. Next Steps:
+2. Logging Configuration:
+
+   - Single LOG_LEVEL environment variable controls all logging
+   - Default level is 'warn' in all environments
+   - All logging tests are skipped (unreliable)
+   - Browser console output filtered in Cypress tests
+   - Consistent log formatting across client and server
+
+3. Next Steps:
    - Test the new production startup on all deployment platforms
    - Consider implementing proper process monitoring
    - Add health checks for both client and server

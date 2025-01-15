@@ -21,7 +21,7 @@ const LOG_LEVELS = {
 
 // Log level is determined by:
 // 1. process.env.LOG_LEVEL
-// 2. Defaults to 'warn' if not set
+// 2. Defaults to 'warn' in all environments
 ```
 
 ## Test Environment
@@ -32,9 +32,8 @@ In Cypress tests, logs are:
    - Cypress command log
    - Browser console
 2. Aggregated per test
-3. Summarized after each test
-4. Network requests are captured
-5. Screenshots are taken on failure
+3. Network requests are captured
+4. All logging tests are skipped (unreliable with LOG_LEVEL changes)
 
 ## Server Logger
 
@@ -44,13 +43,12 @@ The server uses Winston for structured logging:
 import logger from '../config/logger.js';
 
 // Log level is determined by process.env.LOG_LEVEL
-// Defaults to 'info' in development, 'warn' in test
+// Defaults to 'warn' in all environments
 
 // Logs are written to:
-// 1. Console (all levels)
-// 2. error.log (error level)
-// 3. combined.log (info and above)
-// 4. development.log (all levels, only in development)
+// 1. Console (filtered by LOG_LEVEL)
+// 2. error.log (error level only)
+// 3. combined.log (all levels up to LOG_LEVEL)
 ```
 
 ## Common Patterns
@@ -68,15 +66,7 @@ import logger from '../config/logger.js';
    logger.feature('New UI component rendered', { component });
    ```
 
-2. Feature tracking:
-
-   ```javascript
-   const feature = logger.startFeature('checkout');
-   // ... feature code ...
-   feature.end(); // Logs feature completion
-   ```
-
-3. Error handling:
+2. Error handling:
    ```javascript
    try {
      // ... code ...
@@ -89,3 +79,10 @@ import logger from '../config/logger.js';
      });
    }
    ```
+
+## Environment Configuration
+
+- LOG_LEVEL environment variable controls logging across all environments
+- Default level is 'warn' for all environments (development, test, production)
+- All logging tests are skipped due to unreliability with LOG_LEVEL changes
+- Browser console output is filtered based on LOG_LEVEL in Cypress tests

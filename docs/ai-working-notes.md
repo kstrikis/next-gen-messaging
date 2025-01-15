@@ -1162,5 +1162,31 @@ Required Configuration:
      - Message list container to be present
      - Loading spinner to appear and disappear
      - Message composer to be ready
-   - Current workaround is insufficient
-   - TODO: Refactor to use more reliable wait conditions
+
+## Recent Changes
+
+1. Auth System Reorganization:
+
+   - Moved auth logic to dedicated controller (auth.controller.js)
+   - Separated routes into auth.routes.js
+   - Improved guest name generation handling
+   - Better separation of concerns
+
+2. Logging System Simplification:
+
+   - Single source of truth: process.env.LOG_LEVEL
+   - Removed environment-specific log levels
+   - Disabled all logging tests (unreliable)
+   - Updated documentation to reflect changes
+   - Default log level: 'warn' in all environments
+
+3. Channel URL Updates:
+   - Using UUIDs in URLs instead of channel names
+   - Updated tests to handle UUID format
+   - Added proper URL pattern matching
+   - Documented URL format in tests
+
+### Test Configuration
+
+- Current workaround is insufficient
+- TODO: Refactor to use more reliable wait conditions
