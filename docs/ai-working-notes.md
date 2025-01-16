@@ -386,10 +386,34 @@
 
 ### Port Configuration
 
-- Client runs on port 3000 by default
-- Server runs on port 3001 by default
-- In production, ports are explicitly set via environment variables
-- Port conflicts are prevented by configuration in root package.json
+1. Port Management:
+
+   - Next.js client uses PORT environment variable (default: 3000)
+   - Express server uses SERVER_PORT (PORT + 1 in production)
+   - Development:
+     - Client: 3000
+     - Server: 3001
+   - Production (Heroku):
+     - Client: $PORT (provided by Heroku)
+     - Server: $PORT + 1
+   - Port configuration handled in start script:
+     ```bash
+     PORT=$PORT SERVER_PORT=$(($PORT + 1)) concurrently "client start" "server start"
+     ```
+
+2. Process Management:
+
+   - Single Heroku dyno runs both processes
+   - Concurrently manages client and server
+   - Client handles all non-API routes
+   - Server handles only /api/\* routes
+   - Next.js proxies API requests to server
+
+3. Environment Variables:
+   - PORT: Set by Heroku, used by client
+   - SERVER_PORT: Calculated as PORT + 1
+   - NEXT_PUBLIC_API_URL: API endpoint for production
+   - CORS_ORIGIN: Client URL for CORS
 
 ### Environment Variables
 
