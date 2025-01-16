@@ -11,6 +11,32 @@
 - Environment Management: dotenvx for secure environment variable handling
 - CI/CD: GitHub Actions with automatic .env file setup from .env.example
 
+## WebSocket Implementation
+
+1. Custom Server Setup:
+
+   - Using http-proxy-middleware for WebSocket proxying
+   - Custom Next.js server in client/server.js
+   - Direct WebSocket upgrade handling
+   - Supports both polling and WebSocket transports
+   - Proper header forwarding for upgrades
+
+2. Socket.IO Configuration:
+
+   - Client connects through custom server proxy
+   - Prioritizes WebSocket transport
+   - Fallback to polling if needed
+   - Token-based authentication
+   - Automatic reconnection handling
+   - Detailed transport logging
+
+3. Proxy Configuration:
+   - WebSocket upgrade event handling
+   - Error logging and handling
+   - Debug-level request logging
+   - CORS headers for WebSocket
+   - Proper header forwarding
+
 ## Authentication Implementation
 
 1. Frontend Components:
@@ -151,9 +177,30 @@
    - Validate resource existence before EC2 creation
 
 4. Deployment Environments:
+
    - Development: terraform workspace "development"
    - Production: terraform workspace "production"
    - Identical configuration, separate state
+
+5. WebSocket Proxy Configuration:
+   - Next.js configured to proxy WebSocket connections to backend
+   - Socket.IO client uses relative URLs for connection
+   - WebSocket traffic routed through /socket.io path
+   - Proxy handles both HTTP and WebSocket upgrade requests
+   - No direct exposure of backend WebSocket server to internet
+   - Webpack configured to handle WebSocket dependencies
+   - CORS headers properly set for WebSocket connections
+   - Debugging enabled for:
+     - Socket transport upgrades
+     - Connection attempts
+     - Authentication process
+     - Packet data
+     - Error details
+   - Ping/Pong configured:
+     - 10s timeout
+     - 5s interval
+   - Both WebSocket and polling transports supported
+   - Proper error handling and logging at all levels
 
 ## Current Frontend Issues
 
@@ -386,34 +433,10 @@
 
 ### Port Configuration
 
-1. Port Management:
-
-   - Next.js client uses PORT environment variable (default: 3000)
-   - Express server uses SERVER_PORT (PORT + 1 in production)
-   - Development:
-     - Client: 3000
-     - Server: 3001
-   - Production (Heroku):
-     - Client: $PORT (provided by Heroku)
-     - Server: $PORT + 1
-   - Port configuration handled in start script:
-     ```bash
-     PORT=$PORT SERVER_PORT=$(($PORT + 1)) concurrently "client start" "server start"
-     ```
-
-2. Process Management:
-
-   - Single Heroku dyno runs both processes
-   - Concurrently manages client and server
-   - Client handles all non-API routes
-   - Server handles only /api/\* routes
-   - Next.js proxies API requests to server
-
-3. Environment Variables:
-   - PORT: Set by Heroku, used by client
-   - SERVER_PORT: Calculated as PORT + 1
-   - NEXT_PUBLIC_API_URL: API endpoint for production
-   - CORS_ORIGIN: Client URL for CORS
+- Client runs on port 3000 by default
+- Server runs on port 3001 by default
+- In production, ports are explicitly set via environment variables
+- Port conflicts are prevented by configuration in root package.json
 
 ### Environment Variables
 

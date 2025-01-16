@@ -12,18 +12,91 @@ const userSockets = new Map(); // socketId -> userId
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-jwt-secret-do-not-use-in-production';
 
 export function setupWebSocketServer(httpServer) {
+  logger.info('Setting up WebSocket server with config:', {
+    cors: process.env.CORS_ORIGIN,
+    path: process.env.SOCKET_PATH || '/socket.io'
+  });
+
   const io = new Server(httpServer, {
     cors: {
-      origin: process.env.CORS_ORIGIN,
-      methods: ['GET', 'POST'],
-      credentials: true
+      origin: process.env.CORS_ORIGIN || true,
+      methods: ['GET', 'POST', 'OPTIONS'],
+      credentials: true,
+      allowedHeaders: [
+        'Content-Type', 
+        'Authorization', 
+        'Accept',
+        'Connection',
+        'Upgrade',
+        'Sec-WebSocket-Key',
+        'Sec-WebSocket-Version',
+        'Sec-WebSocket-Extensions'
+      ],
+      exposedHeaders: [
+        'Content-Length', 
+        'Content-Type',
+        'Connection',
+        'Upgrade',
+        'Sec-WebSocket-Accept',
+        'Sec-WebSocket-Protocol',
+        'Sec-WebSocket-Version',
+        'Sec-WebSocket-Extensions'
+      ]
     },
-    path: process.env.SOCKET_PATH || '/socket.io'
+    path: process.env.SOCKET_PATH || '/socket.io',
+    transports: ['polling', 'websocket'],
+    allowEIO3: true,
+    pingTimeout: 10000,
+    pingInterval: 5000,
+    connectTimeout: 45000,
+    allowUpgrades: true,
+    upgradeTimeout: 10000,
+    maxHttpBufferSize: 1e8,
+    allowRequest: (req, callback) => {
+      // Log the request for debugging
+      logger.debug('Socket.IO allowRequest:', {
+        url: req.url,
+        method: req.method,
+        headers: req.headers,
+        query: req._query
+      });
+      callback(null, true);
+    }
+  });
+
+  // Log upgrade requests with more detail
+  httpServer.on('upgrade', (request, socket, _head) => {
+    logger.debug('WebSocket upgrade request:', {
+      url: request.url,
+      headers: {
+        ...request.headers,
+        connection: request.headers.connection,
+        upgrade: request.headers.upgrade,
+        'sec-websocket-key': request.headers['sec-websocket-key'],
+        'sec-websocket-version': request.headers['sec-websocket-version'],
+        'sec-websocket-extensions': request.headers['sec-websocket-extensions']
+      },
+      method: request.method,
+      path: new URL(request.url, 'http://localhost').pathname,
+      timestamp: new Date().toISOString()
+    });
+
+    // Set WebSocket upgrade headers
+    socket.setNoDelay(true);
+    socket.setKeepAlive(true, 0);
   });
 
   // Authentication middleware
   io.use(async (socket, next) => {
     try {
+      logger.debug('Socket authentication attempt:', {
+        handshake: {
+          auth: socket.handshake.auth,
+          query: socket.handshake.query,
+          headers: socket.handshake.headers
+        }
+      });
+
       const token = socket.handshake.auth.token || socket.handshake.query.token;
       if (!token) {
         logger.error('Socket auth: No token provided');
@@ -119,9 +192,16 @@ export function setupWebSocketServer(httpServer) {
     }
   });
 
+  // Connection handling
   io.on('connection', async (socket) => {
     const userId = socket.userId;
-    logger.info('User connected:', { userId, socketId: socket.id });
+    logger.info('User connected:', { 
+      userId, 
+      socketId: socket.id,
+      transport: socket.conn.transport.name,
+      protocol: socket.conn.protocol,
+      headers: socket.handshake.headers
+    });
 
     // Add user to online tracking
     if (!onlineUsers.has(userId)) {
@@ -319,6 +399,15 @@ export function setupWebSocketServer(httpServer) {
       }).catch(error => {
         logger.error('Error updating last seen:', { error: error.message });
       });
+    });
+  });
+
+  // Error handling
+  io.on('error', (error) => {
+    logger.error('Socket.IO server error:', {
+      message: error.message,
+      type: error.type,
+      stack: error.stack
     });
   });
 

@@ -2,11 +2,12 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "dotenvx run --env-file=.env.development -- next dev -p ${PORT:-${CLIENT_PORT:-3000}}",
+    "dev": "dotenvx run --env-file=.env.development -- node server.js",
     "build": "dotenvx run --env-file=.env -- next build",
-    "start": "dotenvx run --env-file=.env -- echo \"Starting client...\" && next start -p ${PORT:-${CLIENT_PORT:-3000}}",
-    "start:test": "dotenvx run --env-file=.env.test -- echo \"🔍 Starting client in test mode...\" && next dev -p ${PORT:-${CLIENT_PORT:-3000}}",
+    "start": "dotenvx run --env-file=.env -- echo \"Starting client...\" && node server.js",
+    "start:test": "dotenvx run --env-file=.env.test -- echo \"🔍 Starting client in test mode...\" && node server.js",
     "debug:env": "echo \"Client Before dotenvx:\" && printenv | grep -E 'NODE_ENV|DATABASE_URL' && echo \"\nClient After dotenvx:\" && dotenvx run --env-file=.env.test -- printenv | grep -E 'NODE_ENV|DATABASE_URL'",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
@@ -50,6 +51,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
     "framer-motion": "^11.16.1",
+    "http-proxy-middleware": "^3.0.3",
     "i18next": "^24.2.1",
     "lucide-react": "^0.469.0",
     "next": "^15.1.4",
@@ -65,6 +67,7 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
+    "ws": "^8.18.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

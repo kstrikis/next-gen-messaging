@@ -45,16 +45,49 @@ class SocketService {
     try {
       logger.info('Initializing socket connection with token:', token.substring(0, 10) + '...');
       
-      this.socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
-        path: process.env.NEXT_PUBLIC_SOCKET_PATH || '/socket.io',
+      // Initialize socket with direct connection to backend through custom server proxy
+      this.socket = io('/', {
+        path: '/socket.io',
         auth: { token },
         transports: ['websocket', 'polling'],
         reconnectionAttempts: 3,
         reconnectionDelay: 1000,
         timeout: 10000,
-        query: { token },
-        autoConnect: false
+        forceNew: true,
+        upgrade: true,
+        rememberUpgrade: true
       });
+
+      // Set up basic error handlers before attempting connection
+      this.socket.on('error', (error) => {
+        logger.error('Socket error before connection:', error);
+      });
+
+      this.socket.on('connect_error', (error) => {
+        logger.error('Socket connect_error before connection:', error);
+      });
+
+      // Only set up engine listeners if engine is available
+      if (this.socket.io?.engine) {
+        this.socket.io.engine.on('upgrade', (transport) => {
+          logger.debug('Socket transport upgraded:', { 
+            type: transport.name,
+            protocol: transport.protocol,
+            headers: transport.headers,
+            timestamp: new Date().toISOString(),
+            readyState: transport.readyState,
+            supportsBinary: transport.supportsBinary
+          });
+        });
+
+        this.socket.io.engine.on('packet', (packet) => {
+          logger.debug('Socket packet:', { 
+            type: packet.type,
+            data: packet.data,
+            timestamp: new Date().toISOString()
+          });
+        });
+      }
 
       this.setupListeners();
       
@@ -96,13 +129,26 @@ class SocketService {
 
   setupListeners() {
     this.socket.on('connect', () => {
-      logger.info('🟢 Socket connected');
+      logger.info('🟢 Socket connected', {
+        id: this.socket.id,
+        transport: this.socket.io.engine.transport.name
+      });
       this.connectionAttempts = 0;
     });
 
     this.socket.on('connect_error', (error) => {
       this.connectionAttempts++;
-      logger.error('Socket connection error:', error);
+      logger.error('Socket connection error:', {
+        message: error.message,
+        type: error.type,
+        description: error.description,
+        context: {
+          attempt: this.connectionAttempts,
+          transport: this.socket?.io?.engine?.transport?.name,
+          readyState: this.socket?.io?.engine?.readyState,
+          protocol: this.socket?.io?.engine?.protocol
+        }
+      });
       
       if (error.message?.toLowerCase().includes('authentication') || 
           error.message?.toLowerCase().includes('token') ||
