@@ -40,7 +40,7 @@
     "clean:build": "rm -rf client/.next server/dist",
     "install:all": "npm i && cd client && npm i && cd ../server && npm i",
     "update:all": "npm update && cd client && npm update && cd ../server && npm update",
-    "start": "PORT=$PORT SERVER_PORT=$(($PORT + 1)) concurrently \"cd client && npm run build && npm run start\" \"cd server && npm run build && npm run start\"",
+    "start": "concurrently \"cd client && npm run build && npm run start\" \"cd server && npm run start\"",
     "debug:env": "echo \"Root Before dotenvx:\" && printenv | grep -E 'NODE_ENV|DATABASE_URL' && echo \"\nRoot After dotenvx:\" && dotenvx run --env-file=.env.test -- printenv | grep -E 'NODE_ENV|DATABASE_URL' && echo \"\nServer:\" && cd server && npm run debug:env && echo \"\nClient:\" && cd ../client && npm run debug:env",
     "heroku-prebuild": "cd client && cp .env.example .env && cd ../server && cp .env.example .env && cd .."
   },

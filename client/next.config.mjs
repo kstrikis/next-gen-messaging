@@ -10,10 +10,6 @@ const nextConfig = {
       }
     ];
   },
-  // Ensure Next.js listens on the port provided by Heroku
-  serverOptions: {
-    port: parseInt(process.env.PORT, 10) || 3000
-  }
 };
 
 export default nextConfig; 
