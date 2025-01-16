@@ -71,9 +71,9 @@ try {
   prisma = null;
 }
 
-// Request logging middleware
-app.use((req, res, next) => {
-  logger.info('Incoming request:', { 
+// Request logging middleware - only for API routes
+app.use('/api', (req, res, next) => {
+  logger.info('Incoming API request:', { 
     method: req.method,
     path: req.path,
     query: Object.keys(req.query).length ? JSON.stringify(req.query) : undefined,
@@ -87,10 +87,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/channels', channelsRoutes);
-app.use('/api', messagesRoutes); // Mount messages routes at /api
+app.use('/api', messagesRoutes);
 
 // Health check route
 app.get('/api/health', async (req, res) => {
@@ -165,10 +165,10 @@ app.use((err, req, res, _next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// 404 handler - must be after all routes
-app.use((req, res) => {
-  logger.warn('Route not found:', { path: req.path, method: req.method });
-  res.status(404).json({ error: 'Not found' });
+// 404 handler for API routes only
+app.use('/api/*', (req, res) => {
+  logger.warn('API route not found:', { path: req.path });
+  res.status(404).json({ error: 'API endpoint not found' });
 });
 
 let isShuttingDown = false;

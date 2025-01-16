@@ -1164,3 +1164,28 @@ Required Configuration:
 
 - Current workaround is insufficient
 - TODO: Refactor to use more reliable wait conditions
+
+## Routing Architecture
+
+1. Server (Express):
+
+   - Only handles /api/\* routes
+   - All API endpoints prefixed with /api
+   - 404 handler only for /api routes
+   - Logging middleware scoped to /api paths
+   - Health check at /api/health
+
+2. Client (Next.js):
+
+   - Handles all non-API routes (/, /channel/\*, etc.)
+   - Configured with rewrites for API proxy
+   - API requests proxied to Express backend
+   - Environment-aware API URL configuration
+
+3. Deployment:
+   - Single port setup for Heroku
+   - API requests properly routed through Next.js proxy
+   - Clear separation between frontend and API concerns
+   - Environment variables:
+     - NEXT_PUBLIC_API_URL for production API endpoint
+     - Fallback to localhost:3001 for development
