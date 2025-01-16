@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
+import logger from './lib/logger.js';
 
 // VERY OBVIOUS LOGGING TO CHECK IF MIDDLEWARE IS RUNNING
-console.log('\n🚨 MIDDLEWARE FILE LOADED 🚨');
+logger.info('\n🚨 MIDDLEWARE FILE LOADED 🚨');
 
 export function middleware(request) {
   // VERY OBVIOUS LOGGING FOR EACH REQUEST
-  console.log('\n🔥 MIDDLEWARE EXECUTED 🔥', {
+  logger.info('\n🔥 MIDDLEWARE EXECUTED 🔥', {
     time: new Date().toISOString(),
     url: request.url
   });
@@ -25,7 +26,7 @@ export function middleware(request) {
   const isPolling = isSocketIO && query.transport === 'polling';
 
   // Log request details
-  console.log('\n[Next.js Middleware] Request:', {
+  logger.info('\n[Next.js Middleware] Request:', {
     url: request.url,
     pathname: request.nextUrl.pathname,
     method: request.method,
@@ -53,12 +54,12 @@ export function middleware(request) {
 
   // Special handling for Socket.IO traffic
   if (isSocketIO) {
-    console.log('🔌 SOCKET.IO REQUEST DETECTED 🔌');
+    logger.info('🔌 SOCKET.IO REQUEST DETECTED 🔌');
     const response = NextResponse.next();
     
     // For WebSocket upgrade requests, ensure proper headers
     if (isWebSocket) {
-      console.log('🌐 WEBSOCKET UPGRADE REQUEST DETECTED 🌐', {
+      logger.info('🌐 WEBSOCKET UPGRADE REQUEST DETECTED 🌐', {
         key: headers['sec-websocket-key'],
         version: headers['sec-websocket-version'],
         extensions: headers['sec-websocket-extensions'],
@@ -85,7 +86,7 @@ export function middleware(request) {
       }
 
       // Log response headers
-      console.log('🔄 WebSocket response headers:', {
+      logger.info('🔄 WebSocket response headers:', {
         connection: response.headers.get('Connection'),
         upgrade: response.headers.get('Upgrade'),
         key: response.headers.get('Sec-WebSocket-Key'),

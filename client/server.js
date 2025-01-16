@@ -2,6 +2,7 @@ import { createServer } from 'http';
 import { parse } from 'url';
 import next from 'next';
 import { createProxyMiddleware } from 'http-proxy-middleware';
+import logger from './src/lib/logger.js';
 
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = 'localhost';
@@ -33,7 +34,7 @@ app.prepare().then(() => {
       // Handle Next.js requests
       await handle(req, res, parsedUrl);
     } catch (err) {
-      console.error('Error occurred handling request:', err);
+      logger.error('Error occurred handling request:', err);
       res.statusCode = 500;
       res.end('Internal Server Error');
     }
@@ -53,6 +54,6 @@ app.prepare().then(() => {
   });
 
   server.listen(port, () => {
-    console.log(`> Ready on http://${hostname}:${port}`);
+    logger.info(`> Ready on http://${hostname}:${port}`);
   });
 }); 
